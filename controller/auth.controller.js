@@ -211,10 +211,9 @@ export const login = async (req, res, next) => {
       sameSite: "None",
       secure: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-       path: "/",
-        domain: ".renokon.com" 
+      path: "/", 
     });
-    console.log("Logged in successfully: ", email);
+    console.log("Logged in successfully: ", email, token);
     return res.status(200).json({ sendUser, message: "Logged in successfully" });
   } catch (error) {
     console.log("Error in login ", error);

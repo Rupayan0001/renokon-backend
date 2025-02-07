@@ -1,11 +1,12 @@
 {
-  "name": "linkdien-clone",
+  "name": "Renokon",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon Backend/index.js",
-    "start": "node Backend/index.js"
-  },
+  "dev": "nodemon index.js --inspect",
+  "start": "node index.js",
+  "test": "echo \"No test specified\" && exit 1"
+},
   "keywords": [],
   "author": "",
   "type": "module",

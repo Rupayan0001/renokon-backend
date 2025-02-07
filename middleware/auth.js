@@ -7,9 +7,11 @@ export const auth = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: "You are not logged in" });
     }
+    console.log("token", token);
     let decoded = null;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("decoded: ", decoded);
     } catch (error) {
       if (error.name === "TokenExpiredError") {
         return res.status(401).json({ message: "Session expired. Please log in again." });
@@ -21,6 +23,7 @@ export const auth = async (req, res, next) => {
       }
     }
     const user = await Usermodel.findById(decoded.userId);
+    console.log("user: ", user);
     if (!user) {
       return res.status(401).json({ message: "User no longer exists. Please log in again." });
     }

@@ -167,7 +167,7 @@ export const verifyEmailMobile = async (req, res, next) => {
   }
   user.status = "verified";
   await user.save();
-  const profileUrl = `http://localhost:5173/userProfile/${user._id}`;
+const profileUrl = `${process.env.CLIENT_URL}/${user._id}`;
 
   try {
     const html = createWelcomeEmailTemplate(user.name.split(" ")[0], profileUrl);
@@ -300,7 +300,7 @@ export const enterNewPassword = async (req, res, next) => {
       sameSite: "strict",
       secure: false,
     });
-    const profileUrl = `http://localhost:5173/userProfile/${user._id}`;
+    const profileUrl = `${process.env.CLIENT_URL}/${user._id}`;
     const html = passwordChangedsuccessEmailTemplate(user.name.split(" ")[0], profileUrl);
     await sendEmail(user.email, "Password Changed Successfully", html);
     return res.status(200).json({ message: "Password changed successfully", success: true });

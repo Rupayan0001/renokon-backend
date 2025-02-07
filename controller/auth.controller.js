@@ -209,7 +209,7 @@ export const login = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "strict",
-      secure: false,
+      secure: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     console.log("Logged in successfully: ", email);
@@ -298,7 +298,7 @@ export const enterNewPassword = async (req, res, next) => {
     res.clearCookie("verifiedEmail", {
       httpOnly: true,
       sameSite: "strict",
-      secure: false,
+      secure: true,
     });
     const profileUrl = `${process.env.CLIENT_URL}/${user._id}`;
     const html = passwordChangedsuccessEmailTemplate(user.name.split(" ")[0], profileUrl);

@@ -208,9 +208,11 @@ export const login = async (req, res, next) => {
     const token = jwt.sign({ userId: foundUser._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "None",
       secure: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
+       path: "/",
+        domain: ".renokon.com" 
     });
     console.log("Logged in successfully: ", email);
     return res.status(200).json({ sendUser, message: "Logged in successfully" });
@@ -243,7 +245,7 @@ export const resetPassword = async (req, res, next) => {
 
     const html = verifyEmailForPasswordReset(foundUser.name.split(" ")[0], otp);
     await sendEmail(foundUser.email, "Reset Password", html); // send otp
-    res.cookie("id", foundUser._id, { httpOnly: true, sameSite: "strict", secure: false, maxAge: 30 * 60 * 60 * 1000 });
+    res.cookie("id", foundUser._id, { httpOnly: true, sameSite: "None", secure: true, maxAge: 30 * 60 * 60 * 1000 });
     return res.status(200).json({ message: "OTP sent successfully", success: true });
   } catch (error) {
     console.log("Error in reset password ", error);
@@ -263,7 +265,7 @@ export const verifyOtp = async (req, res, next) => {
     if (!isValidOtp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    res.cookie("verifiedEmail", true, { httpOnly: true, sameSite: "strict", secure: false, maxAge: 60 * 60 * 60 * 1000 });
+    res.cookie("verifiedEmail", true, { httpOnly: true, sameSite: "None", secure: true, maxAge: 60 * 60 * 60 * 1000 });
     return res.status(200).json({ message: "Email verified successfully", success: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -297,7 +299,7 @@ export const enterNewPassword = async (req, res, next) => {
     });
     res.clearCookie("verifiedEmail", {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "None",
       secure: true,
     });
     const profileUrl = `${process.env.CLIENT_URL}/${user._id}`;

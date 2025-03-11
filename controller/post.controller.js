@@ -135,10 +135,9 @@ export const getCurrentUserPost = async (req, res, next) => {
   try {
     const currentUser = req.user;
     const { userId } = req.params;
-    const limit = req.query.limit;
-    const page = req.query.page;
+    const { limit = 50, page = 1, exclude = [] } = req.query;
     const skip = (page - 1) * limit;
-    const userPosts = await PostModel.find({ userId: userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const userPosts = await PostModel.find({ userId: userId, _id: { $nin: exclude || [] } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const allIds = userPosts.map((e) => e._id);
     const likedData = await LikeModel.aggregate([
       {

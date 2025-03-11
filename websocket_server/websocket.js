@@ -9,7 +9,7 @@ import Usermodel from "../model/user.model.js";
 import MyGroupModel from "../model/message_models/myGroups.model.js";
 import Gamemodel from "../model/game_model/gamePool.model.js";
 import GameState from "../model/game_model/gameState.model.js";
-import CheatingModel from "../model/game_model/Cheating.model.js";
+import CheatingModel from "../model/game_model/cheating.model.js";
 import NotificationModel from "../model/notification.model.js";
 import { getquestion } from "../lib/QuestionSet.js";
 import redisClient from "../lib/redis.js";

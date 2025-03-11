@@ -136,6 +136,7 @@ export const getCurrentUserPost = async (req, res, next) => {
     const currentUser = req.user;
     const { userId } = req.params;
     const { limit = 50, page = 1, exclude = [] } = req.query;
+    console.log("exclude", exclude);
     const skip = (page - 1) * limit;
     const userPosts = await PostModel.find({ userId: userId, _id: { $nin: exclude || [] } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const allIds = userPosts.map((e) => e._id);

@@ -20,6 +20,7 @@ dotenv.config();
 import cookieParser from "cookie-parser";
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";

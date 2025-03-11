@@ -210,7 +210,7 @@ export const login = async (req, res, next) => {
     const token = jwt.sign({ userId: foundUser._id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: none,
+      sameSite: "None",
       secure: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       path: "/", 

@@ -246,7 +246,7 @@ export const resetPassword = async (req, res, next) => {
 
     const html = verifyEmailForPasswordReset(foundUser.name.split(" ")[0], otp);
     await sendEmail(foundUser.email, "Reset Password", html); // send otp
-    res.cookie("id", foundUser._id, { httpOnly: true, sameSite: "strict", secure: false, maxAge: 30 * 60 * 60 * 1000 });
+    res.cookie("id", foundUser._id, { httpOnly: true, sameSite: "None", secure: true, maxAge: 30 * 60 * 60 * 1000 });
     return res.status(200).json({ message: "OTP sent successfully", success: true });
   } catch (error) {
     console.log("Error in reset password ", error);
@@ -266,7 +266,7 @@ export const verifyOtp = async (req, res, next) => {
     if (!isValidOtp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    res.cookie("verifiedEmail", true, { httpOnly: true, sameSite: "strict", secure: false, maxAge: 60 * 60 * 60 * 1000 });
+    res.cookie("verifiedEmail", true, { httpOnly: true, sameSite: "None", secure: true, maxAge: 60 * 60 * 60 * 1000 });
     return res.status(200).json({ message: "Email verified successfully", success: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });

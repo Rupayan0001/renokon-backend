@@ -136,9 +136,10 @@ export const getCurrentUserPost = async (req, res, next) => {
     const currentUser = req.user;
     const { userId } = req.params;
     const { limit = 50, page = 1, exclude = [] } = req.query;
-    console.log("exclude", exclude);
+    const excludeArray = Array.isArray(exclude) ? exclude.map(id => new mongoose.Types.ObjectId(id)) : [];
+    console.log("exclude", excludeArray);
     const skip = (page - 1) * limit;
-    const userPosts = await PostModel.find({ userId: userId, _id: { $nin: exclude || [] } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const userPosts = await PostModel.find({ userId: userId, _id: { $nin: excludeArray || [] } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const allIds = userPosts.map((e) => e._id);
     const likedData = await LikeModel.aggregate([
       {

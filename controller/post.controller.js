@@ -24,21 +24,6 @@ export const getAllPost = async (req, res, next) => {
     const skip = (page - 1) * limit;
     const userId = req.user._id;
     const user = req.user;
-    // const myBlockedDocuments = await BlockUserModel.find({ userId: req.user._id });
-    // const hidePosts = await HideAllPostsModel.find({ userId: req.user._id });
-    // const following = await FollowingModel.find({ userId: req.user._id });
-    // const friends = await FriendModel.find({ userId: req.user._id });
-    // const friends2 = await FriendModel2.find({ userId: req.user._id });
-    // const reportedPosts = await ReportPostModel.find({ userId: req.user._id });
-    // const notInterestedPosts = await NotInterestedPostModel.find({ userId: req.user._id });
-
-    // const myBlockList = myBlockedDocuments.map((e) => e.blockedUserId);
-    // const hidesUserIds = hidePosts.map((e) => e.hideUserId);
-    // const followingIds = following.map((e) => e.followingId);
-    // const friendsIds = friends.map((e) => e.friendId);
-    // const friendsIds2 = friends2.map((e) => e.friendId);
-    // const reportedPostsIds = reportedPosts.map((e) => e.postId);
-    // const notInterestedPostsIds = notInterestedPosts.map((e) => e.postId);
     const [myBlockedDocuments, hidePosts, following, friends, friends2, reportedPosts, notInterestedPosts] = await Promise.all([
       BlockUserModel.find({ userId }, { blockedUserId: 1, _id: 0 }).lean(),
       HideAllPostsModel.find({ userId }, { hideUserId: 1, _id: 0 }).lean(),
@@ -135,11 +120,9 @@ export const getCurrentUserPost = async (req, res, next) => {
   try {
     const currentUser = req.user;
     const { userId } = req.params;
-    const { limit = 50, page = 1, exclude = [] } = req.query;
-    const excludeArray = Array.isArray(exclude) ? exclude.map(id => new mongoose.Types.ObjectId(id)) : [];
-    console.log("exclude", excludeArray);
+    const { limit = 50, page = 1 } = req.query;
     const skip = (page - 1) * limit;
-    const userPosts = await PostModel.find({ userId: userId, _id: { $nin: excludeArray || [] } }).sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const userPosts = await PostModel.find({ userId: userId }).sort({ createdAt: -1 }).skip(skip).limit(limit);
     const allIds = userPosts.map((e) => e._id);
     const likedData = await LikeModel.aggregate([
       {

@@ -11,6 +11,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const NODE_ENV = process.env.NODE_ENV;
 // const BACKEND_HOST = process.env.BACKEND_HOST;
 
 // need to add each user should have a unique mobile no
@@ -210,10 +211,10 @@ export const login = async (req, res, next) => {
     const token = jwt.sign({ userId: foundUser._id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: "None",
-      secure: true,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      path: "/", 
+      path: "/",
     });
     console.log("Logged in successfully: ", email);
     return res.status(200).json({ sendUser, message: "Logged in successfully" });
@@ -225,9 +226,9 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "None",
-    secure: true,
-    path: "/"
+    sameSite: NODE_ENV === "production" ? "None" : "lax",
+    secure: NODE_ENV === "production" ? true : false,
+    path: "/",
   });
   res.status(200).json({ message: "Logged out successfully" });
 };
@@ -247,7 +248,13 @@ export const resetPassword = async (req, res, next) => {
 
     const html = verifyEmailForPasswordReset(foundUser.name.split(" ")[0], otp);
     await sendEmail(foundUser.email, "Reset Password", html); // send otp
-    res.cookie("id", foundUser._id, { httpOnly: true, sameSite: "None", secure: true, maxAge: 30 * 60 * 60 * 1000 });
+    res.cookie("id", foundUser._id, {
+      httpOnly: true,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
+      maxAge: 30 * 60 * 60 * 1000,
+      path: "/",
+    });
     return res.status(200).json({ message: "OTP sent successfully", success: true });
   } catch (error) {
     console.log("Error in reset password ", error);
@@ -267,7 +274,13 @@ export const verifyOtp = async (req, res, next) => {
     if (!isValidOtp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
-    res.cookie("verifiedEmail", true, { httpOnly: true, sameSite: "None", secure: true, maxAge: 60 * 60 * 60 * 1000 });
+    res.cookie("verifiedEmail", true, {
+      httpOnly: true,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
+      maxAge: 60 * 60 * 60 * 1000,
+      path: "/",
+    });
     return res.status(200).json({ message: "Email verified successfully", success: true });
   } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
@@ -296,13 +309,15 @@ export const enterNewPassword = async (req, res, next) => {
     await user.save();
     res.clearCookie("id", {
       httpOnly: true,
-      sameSite: "strict",
-      secure: false,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
+      path: "/",
     });
     res.clearCookie("verifiedEmail", {
       httpOnly: true,
-      sameSite: "strict",
-      secure: false,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
+      path: "/",
     });
     const profileUrl = `https://www.renokon.com/userProfile/${user._id}`;
     const html = passwordChangedsuccessEmailTemplate(user.name.split(" ")[0], profileUrl);

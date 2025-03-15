@@ -813,9 +813,9 @@ export const deleteComment = async (req, res, next) => {
       return res.status(400).json({ message: "Comment not found" });
     }
     if (getComment.deletedCount > 0) {
-      const allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
+      // const allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
       await PostModel.updateOne({ _id: postId }, { $inc: { commentCount: -1 } });
-      return res.status(200).json({ message: "Comment deleted successfully", allComments });
+      return res.status(200).json({ message: "Comment deleted successfully" });
     } else {
       throw new Error(`Error in deleting comment`);
     }

@@ -50,7 +50,16 @@ const startPoolStatusCron = () => {
       const notFilledPools = await GameModel.find(notFilledFilter).populate("players").session(session);
 
       if (notFilledPools.length > 0) {
-        const notFilledIds = notFilledPools.map((pool) => pool._id);
+        const updatePromises = notFilledPools.map((pool) => {
+          return GameModel.updateOne(
+            { _id: pool._id },
+            {
+              $set: { status: "active", joinedPlayers: 0, full: false, players: [], gameTime: updateTime },
+            },
+            { session }
+          );
+        });
+        await Promise.all(updatePromises);
         for (const pool of notFilledPools) {
           const emailPromises = pool.players.map((player) => {
             const html = gamePoolNotFilledNotification(player.name.split(" ")[0], pool.title);
@@ -65,12 +74,14 @@ const startPoolStatusCron = () => {
           await Promise.all(deleteJoinedPools);
         }
 
-        await GameModel.updateMany(
-          { _id: { $in: notFilledIds } },
-          {
-            $set: { joinedPlayers: 0, players: [], gameTime: updateTime },
-          }
-        ).session(session);
+        // const arr = await GameModel.updateMany(
+        //   { _id: { $in: notFilledIds } },
+        //   {
+        //     $set: { status: "active", joinedPlayers: 0, players: [], gameTime: updateTime },
+        //   },
+        //   { session }
+        // );
+        // console.log("arr: ", arr, notFilledIds);
       }
 
       const emptyPools = await GameModel.updateMany(

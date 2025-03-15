@@ -224,10 +224,11 @@ export const login = async (req, res, next) => {
   }
 };
 export const logout = async (req, res, next) => {
-  res.clearCookie("token", {
+  res.cookie("token", "", {
     httpOnly: true,
-    sameSite: NODE_ENV === "production" ? "None" : "lax",
-    secure: NODE_ENV === "production" ? true : false,
+    expires: new Date(0),
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    secure: process.env.NODE_ENV === "production",
     path: "/",
   });
   res.status(200).json({ message: "Logged out successfully" });

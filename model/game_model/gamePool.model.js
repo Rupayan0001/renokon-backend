@@ -72,6 +72,7 @@ const GamePoolSchema = new mongoose.Schema(
     },
     cheatPlayer: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     draw: {
       type: Boolean,

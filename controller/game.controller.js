@@ -167,6 +167,7 @@ export const enterPool = async (req, res) => {
       await GameModel.findByIdAndUpdate(poolId, { $set: { full: true } }, { session });
     }
     await session.commitTransaction();
+    console.log("updated: ", updated);
     return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated });
   } catch (error) {
     await session.abortTransaction();

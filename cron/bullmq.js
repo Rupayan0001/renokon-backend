@@ -13,6 +13,7 @@ const gameQueue = new Queue("gameQueue", {
 
 export const scheduleGame = async (gameId, startTime) => {
   const delay = new Date(startTime).getTime() - Date.now() - 1 * 30 * 1000;
+  // - 2 * 60 * 1000;
   if (delay <= 0) {
     console.log("⏳ Game time already passed.");
     return;

@@ -1214,15 +1214,14 @@ export const handleSubmitAnswer = async (data, ws) => {
     }
 
     await redisClient.set(gameKey, JSON.stringify(game), "EX", 3600);
-    console.log("index: ", index);
 
-    ws.send(
+    clients.get(game.players[playerKey === "player1" ? "player1" : "player2"]._id)?.send(
       JSON.stringify({
         type: "result",
         payload: { success: isCorrect, answer: currentQuestion.correct_answer },
       })
     );
-    ws.send(
+    clients.get(game.players[playerKey === "player1" ? "player1" : "player2"]._id)?.send(
       JSON.stringify({
         type: "score",
         payload: {
@@ -1298,7 +1297,6 @@ const handleLeaveGame = async (data, ws) => {
     if (!game) return;
     const playerKey = playerId === game.players.player1._id ? "player1" : "player2";
     const winner = playerKey === "player1" ? game.players.player2._id : game.players.player1._id;
-    console.log("winner: ", winner);
     clients.get(game.players[playerKey === "player1" ? "player1" : "player2"]._id)?.send(JSON.stringify({ type: "i-leftGame" }));
     clients.get(game.players[playerKey === "player1" ? "player2" : "player1"]._id)?.send(
       JSON.stringify({

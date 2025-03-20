@@ -265,7 +265,6 @@ export const getGameResults = async (req, res) => {
     const { poolId } = req.params;
     const pool = await GameStateQuiz.findOne({ poolId });
     if (!pool) return res.status(404).json({ message: "Pool not found" });
-    console.log("pool: ", pool);
     return res.status(200).json({ pool, success: true });
   } catch (error) {
     console.log(`Error in getGameResults: `, error);

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import UserModel from "../model/user.model.js";
 import GameStateQuiz from "../model/game_model/gameState.model.js";
 import JoinedPoolModel from "../model/game_model/joinedPool.model.js";
+import { scheduleGame } from "../cron/bullmq.js";
 const games = ["Cricket", "Football", "Bollywood", "Music", "Business", "Finance", "Personality", "Geography", "History", "Maths"];
 const set = new Set(games);
 const getPoolsByCategory = async (req, res, topic) => {
@@ -117,10 +118,6 @@ export const enterPool = async (req, res) => {
       await session.abortTransaction();
       return res.status(400).json({ message: `Pool is ${pool.status}, can not join this pool`, success: false });
     }
-    // const existingPlayer = await GameModel.findOne({
-    //   _id: poolId,
-    //   players: user._id,
-    // }).session(session);
     const players = pool.players.map((player) => player.toString());
     if (players.includes(user._id.toString())) {
       await session.abortTransaction();
@@ -164,10 +161,10 @@ export const enterPool = async (req, res) => {
     await JoinedPoolModel.create({ userId: user._id, gamePoolId: poolId, status: "active", gameStartTime: pool.gameTime });
 
     if (parseInt(updated.joinedPlayers) === parseInt(updated.maxPlayers)) {
+      await scheduleGame(pool._id, pool.gameTime);
       await GameModel.findByIdAndUpdate(poolId, { $set: { full: true } }, { session });
     }
     await session.commitTransaction();
-    console.log("updated: ", updated);
     return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated });
   } catch (error) {
     await session.abortTransaction();

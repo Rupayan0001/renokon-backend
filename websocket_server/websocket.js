@@ -1103,23 +1103,6 @@ function handleSendOnlineFriends(data, ws) {
   );
 }
 
-const gameState = (poolId, player1, player2 = "", questions, winningAmount) => ({
-  poolId,
-  players: {
-    player1: { _id: player1, score: 0, answers: [] },
-    player2: { _id: player2, score: 0, answers: [] },
-  },
-  questions,
-  player1QuestionIndex: 0,
-  player2QuestionIndex: 0,
-  player1CheatingCount: 0,
-  player2CheatingCount: 0,
-  status: "live",
-  winningAmount,
-  startTime: new Date().toISOString(),
-  endTime: null,
-});
-
 export const handleJoinGame = async (data, ws) => {
   const { poolId, playerId } = data.payload;
   if (!poolId || !playerId) return;
@@ -1129,31 +1112,10 @@ export const handleJoinGame = async (data, ws) => {
     if (!pool) return;
 
     const gameKey = `game-${poolId}`;
-
-    await redisClient.watch(gameKey);
     let game = JSON.parse(await redisClient.get(gameKey));
-
-    if (!game) {
-      const questions = await getquestion(pool.topic);
-      let winningAmount = pool.firstPrize;
-      if (winningAmount === "Free") {
-        winningAmount = 0;
-      }
-      game = gameState(poolId, playerId, "", questions, winningAmount);
-      await redisClient.set(gameKey, JSON.stringify(game), { EX: 3600 });
-      if (ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify({ type: "pool-joined", payload: { success: true } }));
-      }
-      handleSendQuestion(data, ws);
-      return;
-    }
-
+    if (!game) return;
     const playerKey = playerId === game.players.player1._id ? "player1" : "player2";
-    if (!game.players[playerKey]._id) {
-      game.players[playerKey]._id = playerId;
-    }
 
-    await redisClient.set(gameKey, JSON.stringify(game), { EX: 3600 });
     if (ws.readyState === ws.OPEN) {
       ws.send(JSON.stringify({ type: "pool-joined", payload: { success: true } }));
       ws.send(
@@ -1169,15 +1131,11 @@ export const handleJoinGame = async (data, ws) => {
       );
     }
     handleSendQuestion(data, ws);
-
-    await redisClient.unwatch();
   } catch (error) {
     console.error("Error in handleJoinGame:", error);
-    await redisClient.unwatch();
   }
 };
 
-// Send Question to Players
 export const handleSendQuestion = async (data, ws) => {
   const { poolId, playerId } = data.payload;
   if (!poolId) return;
@@ -1196,7 +1154,7 @@ export const handleSendQuestion = async (data, ws) => {
         game.player2QuestionIndex += 1;
       }
     }
-    await redisClient.set(`game-${poolId}`, JSON.stringify(game), { EX: 3600 });
+    await redisClient.set(`game-${poolId}`, JSON.stringify(game), "EX", 3600);
     const currentQuestion = game.questions[index];
     if (!currentQuestion) return;
     const questionToSend = { ...currentQuestion };
@@ -1255,7 +1213,7 @@ export const handleSubmitAnswer = async (data, ws) => {
       game.players[playerKey].score -= 10;
     }
 
-    await redisClient.set(gameKey, JSON.stringify(game), { EX: 3600 });
+    await redisClient.set(gameKey, JSON.stringify(game), "EX", 3600);
     console.log("index: ", index);
 
     ws.send(

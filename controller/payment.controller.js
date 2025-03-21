@@ -4,8 +4,7 @@ import axios from "axios";
 import UserModel from "../model/user.model.js";
 const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID;
 const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
-const CASHFREE_API_URL = "https://sandbox.cashfree.com/pg/orders";
-// const CASHFREE_API_URL = "https://api.cashfree.com/pg/links";
+const CASHFREE_API_URL = process.env.NODE_ENV === "production" ? "https://api.cashfree.com/pg/orders" : "https://sandbox.cashfree.com/pg/orders";
 
 export const initiatePayment = async (req, res) => {
   try {
@@ -25,7 +24,7 @@ export const initiatePayment = async (req, res) => {
           customer_phone: user.mobile,
         },
         order_meta: {
-          return_url: "http://localhost:5173/wallet",
+          return_url: process.env.NODE_ENV === "production" ? "https://renokon.com/wallet" : "http://localhost:5000/wallet",
         },
       },
       {
@@ -76,7 +75,7 @@ export const verifyPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
     if (!orderId) return res.status(400).json({ success: false, message: "Order id is not provided" });
-    const response = await axios.get(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
+    const response = await axios.get(`${CASHFREE_API_URL}/${orderId}`, {
       headers: {
         "Content-Type": "application/json",
         "x-client-id": CASHFREE_APP_ID,
@@ -87,13 +86,14 @@ export const verifyPayment = async (req, res) => {
     console.log("response: ", response);
     if (response.data.order_status !== "PAID") return res.status(400).json({ success: false, message: "Payment not verified" });
     if (response.data.order_status === "PAID") {
+      const amount = response.data.order_amount;
       const wallet = await Wallet.findOne({ userId: response.data.customer_details.customer_id });
-      await UserModel.findByIdAndUpdate(response.data.customer_details.customer_id, { $inc: { balance: response.data.order_amount } });
+      await UserModel.findByIdAndUpdate(response.data.customer_details.customer_id, { $inc: { walletBalance: amount } });
       if (!wallet) {
-        const newWallet = await Wallet.create({ userId: response.data.customer_details.customer_id, balance: response.data.order_amount });
+        const newWallet = await Wallet.create({ userId: response.data.customer_details.customer_id, balance: amount });
         // await newWallet.save();
       } else {
-        wallet.balance += response.data.order_amount;
+        wallet.balance += amount;
         await wallet.save();
       }
     }

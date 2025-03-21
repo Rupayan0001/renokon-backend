@@ -1146,11 +1146,11 @@ export const handleSendQuestion = async (data, ws) => {
     const playerKey = playerId === game.players.player1._id ? "player1" : "player2";
     const index = playerId === game.players.player1._id ? game.player1QuestionIndex : game.player2QuestionIndex;
     if (playerKey === "player1") {
-      if (game.player1QuestionIndex < 29) {
+      if (game.player1QuestionIndex <= 29) {
         game.player1QuestionIndex += 1;
       }
     } else {
-      if (game.player2QuestionIndex < 29) {
+      if (game.player2QuestionIndex <= 29) {
         game.player2QuestionIndex += 1;
       }
     }

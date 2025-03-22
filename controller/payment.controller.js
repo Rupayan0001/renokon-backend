@@ -36,34 +36,6 @@ export const initiatePayment = async (req, res) => {
         },
       }
     );
-    // console.log("amount: ", amount);
-    // const response = await axios.post(
-    //   CASHFREE_API_URL,
-    //   {
-    //     link_id: orderId,
-    //     link_amount: amount,
-    //     link_currency: "INR",
-    //     link_purpose: "Wallet Top-up",
-    //     customer_details: {
-    //       customer_id: String(user._id),
-    //       customer_name: user.name,
-    //       customer_email: customerEmail,
-    //       customer_phone: "9748589803",
-    //     },
-    //     link_notify: {
-    //       sendSms: true,
-    //       sendEmail: true,
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "x-client-id": CASHFREE_APP_ID,
-    //       "x-client-secret": CASHFREE_SECRET_KEY,
-    //       "x-api-version": "2022-09-01",
-    //     },
-    //   }
-    // );
 
     return res.status(200).json({ success: true, paymentSessionId: response.data.payment_session_id });
   } catch (error) {
@@ -83,15 +55,13 @@ export const verifyPayment = async (req, res) => {
         "x-api-version": "2022-09-01",
       },
     });
-    console.log("response: ", response);
     if (response.data.order_status !== "PAID") return res.status(400).json({ success: false, message: "Payment not verified" });
     if (response.data.order_status === "PAID") {
       const amount = response.data.order_amount;
       const wallet = await Wallet.findOne({ userId: response.data.customer_details.customer_id });
       await UserModel.findByIdAndUpdate(response.data.customer_details.customer_id, { $inc: { walletBalance: amount } });
       if (!wallet) {
-        const newWallet = await Wallet.create({ userId: response.data.customer_details.customer_id, balance: amount });
-        // await newWallet.save();
+        await Wallet.create({ userId: response.data.customer_details.customer_id, balance: amount });
       } else {
         wallet.balance += amount;
         await wallet.save();
@@ -113,5 +83,94 @@ export const walletHistory = async (req, res) => {
   } catch (error) {
     console.error("Error in fetching wallet history", error);
     res.status(500).json({ success: false, message: "Wallet history retrieval failed" });
+  }
+};
+
+const CASHFREE_PAYOUT_URL = process.env.NODE_ENV === "production" ? "https://payout-api.cashfree.com/payout/v2/transfer" : "https://payout-gamma.cashfree.com/payout/v2/transfer";
+const CASHFREE_PAYOUT_TOKEN_URL = process.env.NODE_ENV === "production" ? "https://payout-api.cashfree.com/payout/v1" : "https://payout-gamma.cashfree.com/payout/v1";
+
+/**
+ * @desc Generate authentication token for Cashfree API
+ * @returns {Promise<string>} Auth token
+ */
+export const getAuthToken = async () => {
+  try {
+    console.log(process.env.CASHFREE_PAYOUT_ID_DEVELOPMENT, process.env.CASHFREE_PAYOUT_SECRET_DEVELOPMENT);
+    const response = await axios.post(
+      `${CASHFREE_PAYOUT_TOKEN_URL}/authorize`,
+      {},
+      {
+        headers: {
+          "x-client-id": process.env.CASHFREE_PAYOUT_ID_DEVELOPMENT,
+          "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_DEVELOPMENT,
+          "Content-Type": "application/json",
+          "x-api-version": "2022-09-01",
+        },
+      }
+    );
+    console.log("response.data: ", response.data);
+    if (response.data.status === "SUCCESS") {
+      console.log("token: ", response.data.data.token);
+      return response.data.data.token;
+    } else {
+      throw Error;
+    }
+  } catch (error) {
+    console.error("Cashfree Auth Error:", error);
+    throw new Error("Authentication failed");
+  }
+};
+
+/**
+ * @desc Process payout request (withdrawal)
+ * @route POST /api/payout
+ */
+export const processPayout = async (req, res) => {
+  try {
+    const { amount, upiId } = req.body;
+
+    if (!amount || !upiId) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    const token = await getAuthToken();
+
+    const transferId = `TXN-${Date.now()}`;
+    // const payoutRequest = {
+    //   beneId: req.user._id,
+    //   transferId,
+    //   upi: upiId,
+    //   amount: amount,
+    //   remarks: "Payout via UPI",
+    // };
+    // console.log("payoutRequest: ", CASHFREE_PAYOUT_URL);
+    // {"transfer_id":"JUNOB2018","transfer_amount":1,"transfer_mode":"imps","beneficiary_details":{"beneficiary_details":{"beneficiary_instrument_details":{"bank_account_number":"1234554321","bank_ifsc":"SBIN0001161"}}}}
+    const payoutRequest = { transfer_id: transferId, transfer_amount: 1, beneficiary_details: { beneficiary_id: req.user._id } };
+    const response = await axios.post(`https://sandbox.cashfree.com/payout/transfers`, payoutRequest, {
+      headers: {
+        "x-client-id": process.env.CASHFREE_PAYOUT_ID_DEVELOPMENT,
+        "x-client-secret": process.env.CASHFREE_PAYOUT_SECRET_DEVELOPMENT,
+        "Content-Type": "application/json",
+        "x-api-version": "2024-01-01",
+      },
+    });
+    console.log("response: ", response.data);
+    if (response.data.status === "SUCCESS") {
+      console.log(`[Payout Success] User: ${userId}, Amount: ₹${amount}, UPI: ${upiId}`);
+      return { success: true, data: response.data };
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: response.data.message,
+        data: response.data.data || {},
+      });
+    }
+  } catch (error) {
+    console.error("Payout Error:", error.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Withdrawal processing failed",
+      error: error.response?.data || error.message,
+    });
   }
 };

@@ -1,7 +1,6 @@
 import UserModel from "../model/user.model.js";
 // import NotificationModel from "../model/notification.model.js";
 import { ReportedUserModel } from "../model/user.model.js";
-import { sendFriendRequestEmail } from "../emails/emailHandler.js";
 import cloudinary from "../lib/cloudinary.js";
 import PostModel from "../model/post.model.js";
 import CommentModel from "../model/comment.model.js";

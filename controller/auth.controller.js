@@ -5,6 +5,7 @@ import zod from "zod";
 import jwt from "jsonwebtoken";
 import cloudinary from "./../lib/cloudinary.js";
 import { sendEmail } from "../lib/emailService.js";
+import Wallet from "../model/game_model/wallet.model.js";
 import { createWelcomeEmailTemplate, verifyEmail, verifyEmailForPasswordReset, passwordChangedsuccessEmailTemplate } from "../emails/emailTemplate.js";
 import path from "path";
 // import fs from "fs";
@@ -88,6 +89,7 @@ export const signup = async (req, res, next) => {
       education: req.body.education || {},
       status: "not verified",
     });
+    await Wallet.create({ userId: user._id });
     req.user = user;
     next();
     // To Email Sending

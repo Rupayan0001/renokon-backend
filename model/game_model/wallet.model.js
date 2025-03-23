@@ -28,14 +28,13 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔹 Function to update balance safely (Atomic)
-
 const walletSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User", index: true },
     balance: { type: Number, default: 0 },
     transactions: [transactionSchema],
     isLocked: { type: Boolean, default: false },
+    withdrawalRequestAmount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

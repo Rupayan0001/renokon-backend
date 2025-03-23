@@ -616,3 +616,247 @@ export function gamePoolNotFilledNotification(playerName, gameTitle) {
 </html>
   `;
 }
+
+export function withdrawalRequestEmailTemplate(name, amount, upiId, requestId) {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdrawal Request Received</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 500px;
+        margin: 20px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .email-header {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: #ffffff;
+        text-align: center;
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .email-body {
+        padding: 30px;
+        text-align: center;
+        color: #333333;
+      }
+      .info-box {
+        background-color: #f3f6f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        font-size: 16px;
+      }
+      .footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        background-color: #f4f4f4;
+        color: #666666;
+      }
+      .footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        Withdrawal Request Received
+      </div>
+      <div class="email-body">
+        <p>Hi <strong>${name}</strong>,</p>
+        <p>We have received your withdrawal request for an amount of <strong>₹${amount}</strong>.</p>
+        <div class="info-box">
+          Your money will be transferred to your upi id <strong>${upiId}</strong> within <strong>24-48 hours</strong>.  
+        </div>
+        <p>Request ID: <strong>${requestId}</strong></p>
+        <p>Once the withdrawal is completed, we will notify you via email.</p>
+        <p>If you did not request this withdrawal or need any assistance, please contact our support team immediately.</p>
+        <p>Best regards,<br>The Renokon Team</p>
+      </div>
+      <div class="footer">
+        Need help? <a href="mailto:renokon.team@gmail.com">Contact Support</a> <br>
+        &copy; 2025 Renokon. All rights reserved.
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
+export function newWithdrawalRequestAdminEmail(name, amount, upiId, userId, requestId, email, balance) {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Withdrawal Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+      .email-container {
+        max-width: 500px;
+        margin: 20px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+      }
+      .email-header {
+        background: linear-gradient(135deg, #ff5722, #d84315);
+        color: #ffffff;
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .email-body {
+        padding: 30px;
+        color: #333333;
+      }
+      .info-box {
+        background-color: #f3f6f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        font-size: 16px;
+        display: inline-block;
+        text-align: center;
+      }
+      .footer {
+        padding: 15px;
+        font-size: 14px;
+        background-color: #f4f4f4;
+        color: #666666;
+      }
+      .footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        New Withdrawal Request
+      </div>
+      <div class="email-body">
+        <p><strong>User:</strong> ${name} (User ID: ${userId})</p>
+        <p><strong>Amount:</strong> ₹${amount}</p>
+        <p><strong>UPI ID:</strong> ${upiId}</p>
+        <p><strong>Wallet Balance:</strong> ${balance}</p>
+        <p><strong>Request ID:</strong> ${requestId}</p>
+        <div class="info-box">
+          <p><strong>Action Required:</strong> Please process this withdrawal manually.</p>
+          <p>Ensure that the UPI ID is correct before transferring the amount.</p>
+        </div>
+        <p>Best regards,<br>Renokon Admin Team</p>
+      </div>
+      <div class="footer">
+        Withdrawal processed? <a href="mailto:${email}">Send Confirmation</a> <br>
+        or if any issue, let the customer know about it.<br>
+        &copy; 2025 Renokon. All rights reserved.
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
+export function depositSuccessEmailTemplate(name, amount) {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">  
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Deposit Successful</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 0;
+          text-align: center;
+        }
+        .email-container {
+          max-width: 500px;
+          margin: 20px auto;
+          background: #ffffff;
+          border-radius: 10px;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .email-header {
+          background: linear-gradient(135deg, #28a745, #218838);
+          color: #ffffff;
+          padding: 20px;
+          font-size: 24px;
+          font-weight: bold;
+        }
+        .email-body {
+          padding: 30px;
+          color: #333333;
+        }
+        .info-box {
+          background-color: #f3f6f8;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+          font-size: 16px;
+        }
+        .footer {
+          padding: 15px;
+          font-size: 14px;
+          background-color: #f4f4f4;
+          color: #666666;
+        }
+        .footer a {
+          color: #007bff;
+          text-decoration: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          Deposit Successful!
+        </div>
+        <div class="email-body">
+          <p>Hi <strong>${name}</strong>,</p>
+          <p>Your deposit of <strong>₹${amount}</strong> has been successfully credited to your wallet.</p>
+          <div class="info-box">
+            <p>You can now use this balance for transactions on Renokon.</p>
+          </div>
+          <p>Best regards,<br>The Renokon Team</p>
+        </div>
+        <div class="footer">
+          Need help? <a href="mailto:renokon.team@gmail.com">Contact Support</a> <br>
+          &copy; 2025 Renokon. All rights reserved.
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+}

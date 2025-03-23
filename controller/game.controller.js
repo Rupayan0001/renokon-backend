@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import UserModel from "../model/user.model.js";
 import GameStateQuiz from "../model/game_model/gameState.model.js";
 import JoinedPoolModel from "../model/game_model/joinedPool.model.js";
+import Wallet from "../model/game_model/wallet.model.js";
 import { scheduleGame } from "../cron/bullmq.js";
 const games = ["Cricket", "Football", "Bollywood", "Music", "Business", "Finance", "Personality", "Geography", "History", "Maths"];
 const set = new Set(games);
@@ -146,9 +147,9 @@ export const enterPool = async (req, res) => {
       await session.abortTransaction();
       return res.status(400).json({ message: "You have joined another pool, that is within the 30 minutes window of this pool", success: false });
     }
+    let walletBalance = {};
     if (pool.entryFee > 0) {
-      await session.abortTransaction();
-      return res.status(400).json({ message: "Real money gaming will be added in future updates, keep playing free games!", success: false });
+      walletBalance = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: -pool.entryFee } }, { new: true, session });
     }
     const updated = await GameModel.findByIdAndUpdate(
       poolId,
@@ -165,7 +166,7 @@ export const enterPool = async (req, res) => {
       await GameModel.findByIdAndUpdate(poolId, { $set: { full: true } }, { session });
     }
     await session.commitTransaction();
-    return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated });
+    return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated, wallet: walletBalance });
   } catch (error) {
     await session.abortTransaction();
     console.log(`Error in enterPool pool: ${error}`);
@@ -174,8 +175,6 @@ export const enterPool = async (req, res) => {
     session.endSession();
   }
 };
-
-// {$expr: {$eq: ["$maxPlayers", "$joinedPlayers"]}}
 
 export const getPlayers = async (req, res) => {
   try {

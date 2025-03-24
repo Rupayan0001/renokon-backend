@@ -1257,8 +1257,8 @@ export const handleSubmitAnswer = async (data, ws) => {
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
-          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
-          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
+          Wallet.findOneAndUpdate({ userId: game.players.player1._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
+          Wallet.findOneAndUpdate({ userId: game.players.player2._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
         ]);
       }
       if (!draw) {

@@ -1241,7 +1241,6 @@ export const handleSubmitAnswer = async (data, ws) => {
       })
     );
     const opponentQuestionIndex = game[playerKey === "player1" ? "player2QuestionIndex" : "player1QuestionIndex"];
-    console.log("index: ", index, "opponentQuestionIndex: ", opponentQuestionIndex);
     if (index >= 29 && opponentQuestionIndex >= 29) {
       const session = await mongoose.startSession();
       session.startTransaction();

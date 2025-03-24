@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const transactionSchema = new mongoose.Schema(
   {
     amount: { type: Number, required: true, min: 0 },
@@ -13,17 +12,7 @@ const transactionSchema = new mongoose.Schema(
       enum: ["Pending", "Completed", "Failed"],
       default: "Pending",
     },
-    method: {
-      type: String,
-      enum: ["Bank Transfer", "PayPal", "Crypto", "Card", "UPI", "Wallet Transfer"],
-      required: function () {
-        return this.type === "Deposit" || this.type === "Withdraw";
-      },
-    },
-    referenceId: { type: String, unique: true, sparse: true }, // Payment ID, Transaction Hash
-    fromUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // For Transfers
-    toUser: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // For Transfers
-    date: { type: Date, default: Date.now },
+    referenceId: { type: String, unique: true, sparse: true },
   },
   { timestamps: true }
 );

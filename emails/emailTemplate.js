@@ -1,36 +1,109 @@
-export const createFriendRequestEmailTemplate = (senderName, reciverName, profileUrl) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connection Request Accepted</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(to right, #0077B5, #00A0DC); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-    <img src="https://img.freepik.com/premium-vector/linkedin-logo_578229-227.jpg" alt="UnLinked Logo" style="width: 150px; margin-bottom: 20px;border-radius: 10px;"/>
-    <h1 style="color: white; margin: 0; font-size: 28px;">Connection Accepted!</h1>
-  </div>
-  <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-    <p style="font-size: 18px; color: #0077B5;"><strong>Hello ${reciverName},</strong></p>
-    <p>Great news! <strong>${senderName}</strong> has sent you a friend request on UnLinked.</p>
-    <div style="background-color: #f3f6f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <p style="font-size: 16px; margin: 0;"><strong>What's next?</strong></p>
-      <ul style="padding-left: 20px;">
-        <li>Check out ${senderName}'s full profile</li>
-        <li>Send a message to start a conversation</li>
-        <li>Explore mutual interests and share memories</li>
-      </ul>
+export function createFriendRequestEmailTemplate(recipientName, senderName, senderProfileUrl, senderPicUrl) {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Friend Request</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        max-width: 500px;
+        margin: 20px auto;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .email-header {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: #ffffff;
+        text-align: center;
+        padding: 20px;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .email-body {
+        padding: 30px;
+        text-align: center;
+        color: #333333;
+      }
+      .profile-box {
+        margin: 20px 0;
+        text-align: center;
+      }
+      .profile-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 100%;
+        border: 3px solid #007bff;
+        object-fit: cover;
+      }
+      .profile-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+      .action-button {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 14px 28px;
+        text-decoration: none;
+        border-radius: 30px;
+        font-weight: bold;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        background-color: #f4f4f4;
+        color: #666666;
+      }
+      .footer a {
+        color: #007bff;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        New Friend Request!
+      </div>
+      <div class="email-body">
+        <p>Hi ${recipientName},</p>
+        <p><strong>${senderName}</strong> has sent you a friend request on Renokon.</p>
+        <div class="profile-box">
+          <a href="${senderProfileUrl}">
+            <img src="${senderPicUrl}" alt="Profile Picture" class="profile-image">
+          </a>
+          <p class="profile-name">${senderName}</p>
+        </div>
+        <p>Accept the request and start connecting!</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${senderProfileUrl}" class="action-button">Accept Friend Request</a>
+        </div>
+        <p>If you don’t recognize this request, you can ignore it.</p>
+        <p>Best regards,<br>The Renokon Team</p>
+      </div>
+      <div class="footer">
+        Need help? <a href="mailto:renokon.team@gmail.com">Contact Support</a> <br>
+        &copy; 2025 Renokon. All rights reserved.
+      </div>
     </div>
-    <div style="text-align: center; margin: 30px 0;">
-      <a href="${profileUrl}" style="background-color: #0077B5; color: white; padding: 14px 28px; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 16px; transition: background-color 0.3s;">View ${recipientName}'s Profile</a>
-    </div>
-    <p>Expanding your professional network opens up new opportunities. Keep connecting!</p>
-    <p>Best regards,<br>The UnLinked Team</p>
-  </div>
-</body>
-</html>
-`;
+  </body>
+  </html>
+  `;
+}
 
 export const createCommentNotificationEmailTemplate = (recipientName, commenterName, postUrl, commentContent) => `
 <!DOCTYPE html>

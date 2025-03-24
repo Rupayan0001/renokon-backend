@@ -63,7 +63,13 @@ export const verifyPayment = async (req, res) => {
     let wallet;
     if (response.data.order_status === "PAID") {
       amount = response.data.order_amount;
-      wallet = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: amount } }, { new: true, upsert: true });
+      const transaction = {
+        amount: Number(amount),
+        type: "Deposit",
+        status: "Completed",
+        referenceId: response.data.order_id,
+      };
+      wallet = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true, upsert: true });
     }
     const html = depositSuccessEmailTemplate(user.name, amount);
     await sendEmail(user.email, "Deposit Successful", html);
@@ -171,7 +177,17 @@ export const processPayout = async (req, res) => {
     const balance = await Wallet.findOne({ userId: user._id });
     const html_2 = newWithdrawalRequestAdminEmail(user.name, amount, upiId, user._id, requestId, user.email, balance.balance);
     await sendEmail(`renokon.payment@gmail.com`, `New withdrawal Request- ${user._id}`, html_2);
-    await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { withdrawalRequestAmount: amount, balance: -amount } });
+    const transaction = {
+      amount: Number(amount),
+      type: "Withdraw",
+      status: "Pending",
+      referenceId: requestId,
+    };
+    await Wallet.findOneAndUpdate(
+      { userId: user._id },
+      { $inc: { withdrawalRequestAmount: amount, balance: -amount }, $push: { transactions: transaction } },
+      { new: true, upsert: true }
+    );
     return res.status(200).json({ success: true, message: "Withdrawal request received" });
   } catch (error) {
     console.log(`Error in processPayout: ${error}`);

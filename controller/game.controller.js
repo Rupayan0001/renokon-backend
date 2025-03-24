@@ -149,7 +149,12 @@ export const enterPool = async (req, res) => {
     }
     let walletBalance = {};
     if (pool.entryFee > 0) {
-      walletBalance = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: -pool.entryFee } }, { new: true, session });
+      const transaction = {
+        amount: Number(pool.entryFee),
+        type: "Purchase",
+        status: "Completed",
+      };
+      walletBalance = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: -pool.entryFee }, $push: { transactions: transaction } }, { new: true, session });
     }
     const updated = await GameModel.findByIdAndUpdate(
       poolId,

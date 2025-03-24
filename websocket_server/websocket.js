@@ -11,6 +11,7 @@ import Gamemodel from "../model/game_model/gamePool.model.js";
 import GameState from "../model/game_model/gameState.model.js";
 import CheatingModel from "../model/game_model/cheating.model.js";
 import NotificationModel from "../model/notification.model.js";
+import Wallet from "../model/game_model/wallet.model.js";
 import { getquestion } from "../lib/QuestionSet.js";
 import redisClient from "../lib/redis.js";
 import dotenv from "dotenv";
@@ -1240,7 +1241,8 @@ export const handleSubmitAnswer = async (data, ws) => {
       })
     );
     const opponentQuestionIndex = game[playerKey === "player1" ? "player2QuestionIndex" : "player1QuestionIndex"];
-    if (index === 29 && opponentQuestionIndex === 29) {
+    console.log("index: ", index, "opponentQuestionIndex: ", opponentQuestionIndex);
+    if (index >= 29 && opponentQuestionIndex >= 29) {
       const session = await mongoose.startSession();
       session.startTransaction();
       let draw = false;
@@ -1254,9 +1256,17 @@ export const handleSubmitAnswer = async (data, ws) => {
       }
       if (!draw) {
         winner = game.players["player1"].score > game.players["player2"].score ? game.players["player1"]._id : game.players["player2"]._id;
+        const amount = Number(game.winningAmount);
+        const transaction = {
+          amount,
+          type: "Winnings",
+          status: "Completed",
+        };
+
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner, draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
+          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true }),
         ]);
       }
 
@@ -1284,6 +1294,8 @@ export const handleSubmitAnswer = async (data, ws) => {
       await redisClient.del(gameKey);
     }
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error in handleSubmitAnswer:", error);
   }
 };
@@ -1303,14 +1315,7 @@ const handleLeaveGame = async (data, ws) => {
         type: "opponent-leftGame",
       })
     );
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    await Promise.all([
-      Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner } }, { session }),
-      JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", winner: winner } }, { session }),
-    ]);
-    await session.commitTransaction();
-    session.endSession();
+
     let newGameState = JSON.parse(await redisClient.get(`game-${poolId}`));
     newGameState.poolId = poolId;
     newGameState.endTime = new Date().toISOString();
@@ -1318,8 +1323,25 @@ const handleLeaveGame = async (data, ws) => {
     newGameState.verification = "verified";
     newGameState.winner = winner;
     const gameState2 = await GameState.create(newGameState);
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    const amount = Number(game.winningAmount);
+    const transaction = {
+      amount,
+      type: "Winnings",
+      status: "Completed",
+    };
+    await Promise.all([
+      Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner } }, { session }),
+      JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", winner: winner } }, { session }),
+      Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true }),
+    ]);
+    await session.commitTransaction();
+    session.endSession();
     await redisClient.del(gameKey);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error(`Failed to handleLeaveGame: `, error);
   }
 };

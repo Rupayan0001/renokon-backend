@@ -11,6 +11,8 @@ import FriendModel from "../model/friends.model.js";
 import FriendModel2 from "../model/friends2.model.js";
 import BlockListModel from "../model/blockList.model.js";
 import HideAllPostsModel from "../model/hideAllPost.model.js";
+import { createFriendRequestEmailTemplate } from "../emails/emailTemplate.js";
+import { sendEmail } from "../lib/emailService.js";
 // import errorMap from "zod/locales/en.js";
 
 export const getLoggedInuser = async (req, res, next) => {
@@ -415,17 +417,17 @@ export const sendFriendRequest = async (req, res, next) => {
       friendId: currentUser._id,
     });
     if (friendRequestEntry) {
-      return res.status(200).json({ message: "Friend request sent" });
-      // const profileUrl = `http://localhost:5173/userProfile/${currentUser._id}`;
-      // try {
-      //   await sendFriendRequestEmail(friendProfile.email, currentUser.name, friendProfile.name, profileUrl);
-      //   return;
-      // } catch (error) {
-      //   console.log(`Error in email for friendRequest: ${error}`);
-      //   return;
-      // }
+      const profileUrl = `http://renokon.com/userProfile/${currentUser._id}`;
+      res.status(200).json({ message: "Friend request sent" });
+      try {
+        const html = createFriendRequestEmailTemplate(currentUser.name.split(" ")[0], friendProfile.name, profileUrl, friendProfile.profilePic);
+        await sendEmail(friendProfile.email, "New Friend Request", html);
+        return;
+      } catch (error) {
+        console.log(`Error in email for friendRequest: ${error}`);
+        return;
+      }
     }
-    // return res.status(500).json({ message: "Something went wrong, Please try again later" });
   } catch (error) {
     console.log(`Error in sending friend request: ${error}`);
     if (error.code === 11000) {

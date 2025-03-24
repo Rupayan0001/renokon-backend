@@ -1248,9 +1248,17 @@ export const handleSubmitAnswer = async (data, ws) => {
       let winner;
       if (game.players["player1"].score === game.players["player2"].score) {
         draw = true;
+        const amount = Number(game.winningAmount) / 2;
+        const transaction = {
+          amount,
+          type: "Winnings",
+          status: "Completed",
+        };
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
+          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
+          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
         ]);
       }
       if (!draw) {
@@ -1265,7 +1273,7 @@ export const handleSubmitAnswer = async (data, ws) => {
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner, draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
-          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true }),
+          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
         ]);
       }
 

@@ -171,13 +171,25 @@ export const enterPool = async (req, res) => {
       await GameModel.findByIdAndUpdate(poolId, { $set: { full: true } }, { session });
     }
     await session.commitTransaction();
+    session.endSession();
     return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated, wallet: walletBalance });
   } catch (error) {
     await session.abortTransaction();
-    console.log(`Error in enterPool pool: ${error}`);
-    return res.status(500).json({ message: "Internal server error" });
-  } finally {
     session.endSession();
+    if (!req.try) {
+      req.try = 1;
+      setTimeout(() => {
+        enterPool(req, res);
+      }, 500);
+    } else if (req.try < 4) {
+      error.try = req.try + 1;
+      setTimeout(() => {
+        enterPool(req, res);
+      }, 500);
+    } else {
+      console.log(`Error in enterPool pool: ${error}`);
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 

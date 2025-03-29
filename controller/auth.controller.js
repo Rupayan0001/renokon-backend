@@ -84,7 +84,7 @@ export const signup = async (req, res, next) => {
       headline: req.body.headline || "",
       about: req.body.about || "",
       skills: req.body.skills || "",
-      loaction: req.body.loaction || "",
+      location: req.body.location || "",
       experience: req.body.experience || {},
       education: req.body.education || {},
       status: "not verified",

@@ -19,7 +19,7 @@ const transactionSchema = new mongoose.Schema(
 
 const walletSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User", index: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User", index: true, unique: true },
     balance: { type: Number, default: 0 },
     transactions: [transactionSchema],
     isLocked: { type: Boolean, default: false },

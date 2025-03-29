@@ -22,8 +22,39 @@ export const getAllPost = async (req, res, next) => {
     // const allPosts = await PostModel.find({ $or: [{ userId: { $in: req.user.following } }, { userId: { $in: req.user.friends } }, { userId: { $in: celebrityIds } }] }).sort({ createdAt: -1 });
     const { limit = 50, page = 1 } = req.query;
     const skip = (page - 1) * limit;
-    const userId = req.user._id;
     const user = req.user;
+    if (!user) {
+      const allPosts = await PostModel.find({
+        audience: { $ne: "Only me" },
+      })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+      const allIds = allPosts.map((e) => e._id);
+      const likedData = await LikeModel.aggregate([
+        {
+          $match: {
+            postId: { $in: allIds },
+          },
+        },
+        {
+          $group: {
+            _id: "$postId",
+            totalLikes: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            postId: "$_id",
+            totalLikes: 1,
+            userLiked: { $literal: false },
+          },
+        },
+      ]);
+      await PostModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
+      return res.status(200).json({ allPosts, likedData });
+    }
+    const userId = req.user?._id;
     const [myBlockedDocuments, hidePosts, following, friends, friends2, reportedPosts, notInterestedPosts] = await Promise.all([
       BlockUserModel.find({ userId }, { blockedUserId: 1, _id: 0 }).lean(),
       HideAllPostsModel.find({ userId }, { hideUserId: 1, _id: 0 }).lean(),

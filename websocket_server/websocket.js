@@ -38,7 +38,6 @@ export const setupWebSocket = (server) => {
   wss.on("connection", (ws, req) => {
     const token = getTokenFromCookies(req);
     if (!token) {
-      console.log("WebSocket Unauthorized: No token provided");
       ws.send(JSON.stringify({ type: "unauthorized" }));
       ws.close(1008, "Unauthorized");
       return;

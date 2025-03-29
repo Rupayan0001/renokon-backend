@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
@@ -22,7 +21,6 @@ const userSchema = new mongoose.Schema(
     mobile: {
       type: String,
       default: "",
-      required: true,
       index: true,
     },
     status: {

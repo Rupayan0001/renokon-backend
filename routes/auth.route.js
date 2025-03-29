@@ -2,6 +2,10 @@ import express from "express";
 import { signup, login, logout, sendOTP, verifyEmailMobile, resetPassword, enterNewPassword, verifyOtp } from "./../controller/auth.controller.js";
 import { auth } from "../middleware/auth.js";
 import rateLimiter from "express-rate-limit";
+import passport from "passport";
+import "./../lib/passport.js";
+import jwt from "jsonwebtoken";
+const NODE_ENV = process.env.NODE_ENV;
 const router = express.Router();
 
 const signUpLimiter = rateLimiter({
@@ -57,5 +61,30 @@ router.post("/logout", auth, logout);
 router.post("/reset_password", resetPasswordLimiter, resetPassword);
 router.post("/verifyOtp", resendOTPLimiter, verifyOtp);
 router.post("/enter_new_password", enterNewPassword);
+
+router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
+  const id = req.user?._id;
+
+  const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: NODE_ENV === "production" ? "None" : "lax",
+    secure: NODE_ENV === "production" ? true : false,
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+  console.log("Logged in successfully");
+  res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");
+  return;
+  // return res.status(200).json({ sendUser: req.user, message: "Logged in successfully" });
+});
+
+// API route to get user info
+router.get("/api/me", (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Not logged in" });
+  res.json(req.user);
+});
 
 export default router;

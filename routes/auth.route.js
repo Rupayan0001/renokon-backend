@@ -45,7 +45,7 @@ const resetPasswordLimiter = rateLimiter({
   max: 20,
   handler: (req, res) => {
     console.error(`Rate limit exceeded: IP ${req.ip} on ${req.originalUrl}`);
-    res.status(429).json({ message: "Too many reset password requests, please try again later." });
+    res.status(429).json({ message: "Too many password reset requests, please try again later." });
   },
 });
 

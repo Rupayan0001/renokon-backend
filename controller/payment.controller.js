@@ -23,7 +23,7 @@ export const initiatePayment = async (req, res) => {
           customer_id: user._id,
           customer_name: user.name,
           customer_email: customerEmail,
-          customer_phone: user.mobile,
+          customer_phone: user.mobile || "9999999999",
         },
         order_meta: {
           return_url: process.env.NODE_ENV === "production" ? "https://renokon.com/wallet" : "http://localhost:5000/wallet",

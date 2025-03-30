@@ -14,19 +14,21 @@ const getPoolsByCategory = async (req, res, topic) => {
     if (!set.has(topic)) {
       return res.status(400).json({ success: false, message: "Invalid category" });
     }
-    const types = ["Free", "H2H", "VIP"];
+    // const types = ["Free", "H2H", "VIP"];
 
-    const results = await Promise.all(
-      types.map((type) => {
-        if (type === "Free") {
-          return GameModel.find({ topic, status: "active", full: false, type }).limit(4);
-        } else {
-          return GameModel.find({ topic, status: "active", full: false, type }).limit(12);
-        }
-      })
-    );
+    // const results = await Promise.all(
+    //   types.map((type) => {
+    //     if (type === "Free") {
+    //       return GameModel.find({ topic, status: "active", full: false, type }).limit(4);
+    //     } else {
+    //       return GameModel.find({ topic, status: "active", full: false, type }).limit(12);
+    //     }
+    //   })
+    // );
+    const results = await GameModel.find({ topic, status: "active", full: false, type: "Free" }).limit(30);
 
-    const pools = results.flat();
+    // const pools = results.flat();
+    const pools = results;
     if (!pools.length) {
       return res.status(404).json({ success: false, message: "No pools available right now", pools: [] });
     }

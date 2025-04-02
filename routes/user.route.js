@@ -2,14 +2,37 @@ import express from "express";
 const router = express.Router();
 import { auth } from "../middleware/auth.js";
 import {
-    suggestedUser, userProfile, updateUser, updateUserBannerpic, updateProfilePic, followThisUser, unFollowUser,
-    blockUser, unBlockUser, reportUser, getBlockedUsers, sendFriendRequest,
-    removeFriend, rejectFriendRequest, addFriend, deleteMyAccount, basicUserProfile, profileSearch, getFollowers, getLoggedInuser,
-    getFollowing, cancelFriendRequest, getAllFriends, isMyFriend, getHideUsers, unHideUser, searchFriends
+  suggestedUser,
+  userProfile,
+  updateUser,
+  updateUserBannerpic,
+  updateProfilePic,
+  followThisUser,
+  unFollowUser,
+  blockUser,
+  unBlockUser,
+  reportUser,
+  getBlockedUsers,
+  sendFriendRequest,
+  removeFriend,
+  rejectFriendRequest,
+  addFriend,
+  deleteMyAccount,
+  basicUserProfile,
+  profileSearch,
+  getFollowers,
+  getLoggedInuser,
+  getFollowing,
+  cancelFriendRequest,
+  getAllFriends,
+  isMyFriend,
+  getHideUsers,
+  unHideUser,
+  searchFriends,
+  myPoints,
 } from "../controller/user.controller.js";
 import multer from "multer";
 const upload = multer({ dest: "uploads/" });
-
 
 router.use(auth);
 
@@ -39,16 +62,16 @@ router.get("/:userId/getHideUsers", getHideUsers);
 router.post("/:friendId/sendFriendRequest", sendFriendRequest);
 router.put("/:friendId/cancelFriendRequest", cancelFriendRequest);
 router.delete("/:friendId/rejectFriendRequest", rejectFriendRequest);
-router.put("/:friendId/addFriend", addFriend)
-router.get("/getAllFriends", getAllFriends)
-router.delete("/:friendId/removeFriend", removeFriend)
-router.get("/:id/isMyFriend", isMyFriend)
+router.put("/:friendId/addFriend", addFriend);
+router.get("/getAllFriends", getAllFriends);
+router.delete("/:friendId/removeFriend", removeFriend);
+router.get("/:id/isMyFriend", isMyFriend);
 
-router.delete("/deleteMyAccount", deleteMyAccount)
+router.delete("/deleteMyAccount", deleteMyAccount);
+router.get("/myPoints", myPoints);
 
 router.use("/", (req, res) => {
-    res.status(400).json({ message: "You are not logged in!" })
-})
-
+  res.status(400).json({ message: "You are not logged in!" });
+});
 
 export default router;

@@ -7,13 +7,13 @@ import GameStateQuiz from "../model/game_model/gameState.model.js";
 import JoinedPoolModel from "../model/game_model/joinedPool.model.js";
 import Wallet from "../model/game_model/wallet.model.js";
 import { scheduleGame } from "../cron/bullmq.js";
-const games = ["Cricket", "Football", "Bollywood", "Music", "Business", "Finance", "Personality", "Geography", "History", "Maths"];
-const set = new Set(games);
+// const games = ["Cricket", "Football", "Bollywood", "Music", "Business", "Finance", "Personality", "Geography", "History", "Maths"];
+// const set = new Set(games);
 const getPoolsByCategory = async (req, res, topic) => {
   try {
-    if (!set.has(topic)) {
-      return res.status(400).json({ success: false, message: "Invalid category" });
-    }
+    // if (!set.has(topic)) {
+    //   return res.status(400).json({ success: false, message: "Invalid category" });
+    // }
     // const types = ["Free", "H2H", "VIP"];
 
     // const results = await Promise.all(
@@ -25,14 +25,29 @@ const getPoolsByCategory = async (req, res, topic) => {
     //     }
     //   })
     // );
-    const results = await GameModel.find({ topic, status: "active", full: false, type: "Free" }).limit(30);
-
+    const results = await GameModel.find({ status: "active", full: false, type: "Brand" }).limit(30);
     // const pools = results.flat();
     const pools = results;
     if (!pools.length) {
       return res.status(404).json({ success: false, message: "No pools available right now", pools: [] });
     }
     return res.status(200).json({ success: true, pools });
+  } catch (error) {
+    console.error(`Error fetching ${topic} pools:`, error);
+    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+  }
+};
+export const getTopicSpecificPools = async (req, res) => {
+  try {
+    let { topic } = req.params;
+    if (!topic) {
+      return res.status(400).json({ success: false, message: "Invalid topic" });
+    }
+    const results = await GameModel.findOne({ status: "active", full: false, topic, type: "Brand" });
+    if (!results) {
+      return res.status(404).json({ success: false, message: "No pools available right now", pools: [] });
+    }
+    return res.status(200).json({ success: true, results });
   } catch (error) {
     console.error(`Error fetching ${topic} pools:`, error);
     res.status(500).json({ success: false, message: "Server error. Please try again later." });
@@ -149,15 +164,15 @@ export const enterPool = async (req, res) => {
       await session.abortTransaction();
       return res.status(400).json({ message: "You have joined another pool, that is within the 30 minutes window of this pool", success: false });
     }
-    let walletBalance = {};
-    if (pool.entryFee > 0) {
-      const transaction = {
-        amount: Number(pool.entryFee),
-        type: "Purchase",
-        status: "Completed",
-      };
-      walletBalance = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: -pool.entryFee }, $push: { transactions: transaction } }, { new: true, session });
-    }
+    // let walletBalance = {};
+    // if (pool.entryFee > 0) {
+    //   const transaction = {
+    //     amount: Number(pool.entryFee),
+    //     type: "Purchase",
+    //     status: "Completed",
+    //   };
+    //   walletBalance = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: -pool.entryFee }, $push: { transactions: transaction } }, { new: true, session });
+    // }
     const updated = await GameModel.findByIdAndUpdate(
       poolId,
       {
@@ -174,7 +189,7 @@ export const enterPool = async (req, res) => {
     }
     await session.commitTransaction();
     session.endSession();
-    return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated, wallet: walletBalance });
+    return res.status(200).json({ message: "You have joined the pool", success: true, userId: user._id, pool: updated });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();

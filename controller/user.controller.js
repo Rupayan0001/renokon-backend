@@ -12,6 +12,7 @@ import FriendModel2 from "../model/friends2.model.js";
 import BlockListModel from "../model/blockList.model.js";
 import HideAllPostsModel from "../model/hideAllPost.model.js";
 import { createFriendRequestEmailTemplate } from "../emails/emailTemplate.js";
+import Point from "../model/game_model/point.model.js";
 import { sendEmail } from "../lib/emailService.js";
 // import errorMap from "zod/locales/en.js";
 
@@ -25,6 +26,17 @@ export const getLoggedInuser = async (req, res, next) => {
     }
   } catch (error) {
     console.log(`Error in getLoggedInuser: ${error}`);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+export const myPoints = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const points = await Point.findOne({ userId: user._id });
+    if (!points) return res.status(400).json({ message: "Points not found" });
+    return res.status(200).json({ success: true, points });
+  } catch (error) {
+    console.log(`Error in myPoints: ${error}`);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

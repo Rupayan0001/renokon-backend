@@ -52,7 +52,12 @@ new Worker(
       if (!pool) return;
       const playerId1 = pool.players[0];
       const playerId2 = pool.players[1];
-      const questions = await getquestion(pool.topic);
+      let questions = [];
+      questions = await getquestion(pool.topic);
+      if (questions.length === 0) {
+        questions = await getquestion(pool.topic);
+      }
+
       let winningAmount = pool.firstPrize;
       if (winningAmount === "Free") {
         winningAmount = 0;

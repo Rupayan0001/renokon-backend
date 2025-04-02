@@ -24,6 +24,7 @@ import {
   getJoinedPlayers,
   getSpecificLivePoolData,
   getGameResults,
+  getTopicSpecificPools,
 } from "../controller/game.controller.js";
 
 router.get("/megaPoolsData", getMegaPoolsData);
@@ -45,5 +46,6 @@ router.get("/joinedPools/:status", joinedPools);
 router.get("/quickPlay", quickPlay);
 router.get("/getJoinedPlayers/:poolId", getJoinedPlayers);
 router.get("/game-results/:poolId", getGameResults);
+router.get("/getTopicSpecificPools/:topic", getTopicSpecificPools);
 
 export default router;

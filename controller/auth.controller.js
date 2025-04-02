@@ -90,6 +90,7 @@ export const signup = async (req, res, next) => {
       status: "not verified",
     });
     await Wallet.create({ userId: user._id });
+    await Point.create({ userId: user._id, point: 1000 });
     req.user = user;
     next();
     // To Email Sending

@@ -11,6 +11,7 @@ import Gamemodel from "../model/game_model/gamePool.model.js";
 import GameState from "../model/game_model/gameState.model.js";
 import CheatingModel from "../model/game_model/cheating.model.js";
 import NotificationModel from "../model/notification.model.js";
+import Point from "../model/game_model/point.model.js";
 import Wallet from "../model/game_model/wallet.model.js";
 import { getquestion } from "../lib/QuestionSet.js";
 import redisClient from "../lib/redis.js";
@@ -1240,24 +1241,22 @@ export const handleSubmitAnswer = async (data, ws) => {
       })
     );
     const opponentQuestionIndex = game[playerKey === "player1" ? "player2QuestionIndex" : "player1QuestionIndex"];
-    if (index >= 29 && opponentQuestionIndex >= 29) {
+    if (index >= 19 && opponentQuestionIndex >= 19) {
       const session = await mongoose.startSession();
       session.startTransaction();
       let draw = false;
       let winner;
       if (game.players["player1"].score === game.players["player2"].score) {
         draw = true;
-        const amount = Number(game.winningAmount) / 2;
-        const transaction = {
-          amount,
-          type: "Winnings",
-          status: "Completed",
-        };
+        // const amount = Number(game.winningAmount) / 2;
+        // const transaction = {
+        //   amount,
+        //   type: "Points",
+        //   status: "Completed",
+        // };
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
-          Wallet.findOneAndUpdate({ userId: game.players.player1._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
-          Wallet.findOneAndUpdate({ userId: game.players.player2._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
         ]);
       }
       if (!draw) {
@@ -1265,14 +1264,23 @@ export const handleSubmitAnswer = async (data, ws) => {
         const amount = Number(game.winningAmount);
         const transaction = {
           amount,
-          type: "Winnings",
+          type: "Points",
+          status: "Completed",
+        };
+        const transaction2 = {
+          amount: -10,
+          type: "Points",
           status: "Completed",
         };
 
         await Promise.all([
           Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner, draw } }, { session }),
           JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", draw } }, { session }),
-          Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }),
+          Point.findOneAndUpdate({ userId: winner }, { $inc: { point: amount }, $push: { transactions: transaction } }),
+          Point.findOneAndUpdate(
+            { userId: game.players["player1"]._id === winner ? game.players["player2"]._id : game.players["player1"]._id },
+            { $inc: { point: transaction2.amount }, $push: { transactions: transaction2 } }
+          ),
         ]);
       }
 
@@ -1309,6 +1317,7 @@ export const handleSubmitAnswer = async (data, ws) => {
 const handleLeaveGame = async (data, ws) => {
   const { poolId, playerId, playerName } = data.payload;
   if (!poolId || !playerId) return;
+  const session = await mongoose.startSession();
   try {
     const gameKey = `game-${poolId}`;
     const game = JSON.parse(await redisClient.get(gameKey));
@@ -1329,18 +1338,26 @@ const handleLeaveGame = async (data, ws) => {
     newGameState.verification = "verified";
     newGameState.winner = winner;
     const gameState2 = await GameState.create(newGameState);
-    const session = await mongoose.startSession();
     session.startTransaction();
     const amount = Number(game.winningAmount);
     const transaction = {
       amount,
-      type: "Winnings",
+      type: "Points",
+      status: "Completed",
+    };
+    const transaction2 = {
+      amount: -10,
+      type: "Points",
       status: "Completed",
     };
     await Promise.all([
       Gamemodel.findByIdAndUpdate(poolId, { $set: { status: "completed", winner: winner } }, { session }),
       JoinedPoolModel.updateMany({ gamePoolId: poolId }, { $set: { status: "completed", winner: winner } }, { session }),
-      Wallet.findOneAndUpdate({ userId: winner }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true }),
+      Point.findOneAndUpdate({ userId: winner }, { $inc: { point: amount }, $push: { transactions: transaction } }),
+      Point.findOneAndUpdate(
+        { userId: game.players["player1"]._id === winner ? game.players["player2"]._id : game.players["player1"]._id },
+        { $inc: { point: transaction2.amount }, $push: { transactions: transaction2 } }
+      ),
     ]);
     await session.commitTransaction();
     session.endSession();
@@ -1414,7 +1431,7 @@ async function handleNotifyPoolJoined(data, ws) {
         type: "new-player-joined-pool",
         senderProfilePic: profilePic,
         senderName: pool.title,
-        content: `${name} has joined the ${pool.title} pool.`,
+        content: `${name} has joined the ${pool.title}.`,
       });
       clients.get(e.toString())?.send(
         JSON.stringify({

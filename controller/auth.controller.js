@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import cloudinary from "./../lib/cloudinary.js";
 import { sendEmail } from "../lib/emailService.js";
 import Wallet from "../model/game_model/wallet.model.js";
+import redisClient from "../lib/redis.js";
 import { createWelcomeEmailTemplate, verifyEmail, verifyEmailForPasswordReset, passwordChangedsuccessEmailTemplate } from "../emails/emailTemplate.js";
 import path from "path";
 // import fs from "fs";
@@ -234,7 +235,7 @@ export const logout = async (req, res, next) => {
     secure: process.env.NODE_ENV === "production",
     path: "/",
   });
-  res.status(200).json({ message: "Logged out successfully" });
+  return res.status(200).json({ message: "Logged out successfully" });
 };
 // Password Reset logic
 
@@ -331,4 +332,25 @@ export const enterNewPassword = async (req, res, next) => {
     console.log("Error in entering new password ", error);
     return res.status(500).json({ message: `${error.errors ? error.errors[0].message : error}` });
   }
+};
+
+export const exchangeJWT = async (req, res, next) => {
+  const { code } = req.body;
+  console.log("came for code exchange ", code);
+  const codeData = await redisClient.get(`code-${code}`);
+
+  if (!codeData) return res.status(400).json({ error: "Invalid or expired code" });
+
+  const { userId } = JSON.parse(codeData);
+  await redisClient.del(`code-${code}`);
+  const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: NODE_ENV === "production" ? "None" : "lax",
+    secure: NODE_ENV === "production" ? true : false,
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: "/",
+  });
+  return res.json({ success: true });
 };

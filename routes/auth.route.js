@@ -65,7 +65,7 @@ router.post("/enter_new_password", enterNewPassword);
 // router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 router.get("/auth/google", (req, res, next) => {
   const redirect = req.query.redirect || "web";
-  console.log("redirect", redirect);
+  console.log("redirect", redirect, req.originalUrl);
   passport.authenticate("google", {
     scope: ["profile", "email"],
     state: redirect,
@@ -86,7 +86,24 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   });
   console.log("Logged in successfully: req.query.redirect", redirectTarget);
   if (redirectTarget === "app") {
-    return res.redirect("renokon://auth-complete");
+    console.log("renokon://auth-complete");
+    return res.send(`
+      <html>
+        <head>
+          <title>Opening Renokon...</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </head>
+        <body style="background:#000; color:#fff; font-family:sans-serif; text-align:center; padding-top:100px;">
+          <p>Redirecting to the Renokon app...</p>
+          <script>
+            setTimeout(() => {
+              window.location.href = "renokon://auth-complete";
+            }, 500);
+          </script>
+          <p>If nothing happens, <a href="renokon://auth-complete">tap here</a>.</p>
+        </body>
+      </html>
+    `);
   }
   res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");
   return;

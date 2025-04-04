@@ -75,7 +75,10 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-  console.log("Logged in successfully");
+  console.log("Logged in successfully: req.query.redirect", req.query.redirect);
+  if (req.query.redirect === "app") {
+    return res.redirect("renokon://auth-complete");
+  }
   res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");
   return;
   // return res.status(200).json({ sendUser: req.user, message: "Logged in successfully" });

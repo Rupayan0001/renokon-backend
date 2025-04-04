@@ -62,10 +62,19 @@ router.post("/reset_password", resetPasswordLimiter, resetPassword);
 router.post("/verifyOtp", resendOTPLimiter, verifyOtp);
 router.post("/enter_new_password", enterNewPassword);
 
-router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+// router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/auth/google", (req, res, next) => {
+  const redirect = req.query.redirect || "web";
+  console.log("redirect", redirect);
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state: redirect,
+  })(req, res, next);
+});
 
 router.get("/google/callback", passport.authenticate("google", { session: false }), (req, res) => {
   const id = req.user?._id;
+  const redirectTarget = req.query.state || "web";
 
   const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
   res.cookie("token", token, {
@@ -75,8 +84,8 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-  console.log("Logged in successfully: req.query.redirect", req.query.redirect);
-  if (req.query.redirect === "app") {
+  console.log("Logged in successfully: req.query.redirect", redirectTarget);
+  if (redirectTarget === "app") {
     return res.redirect("renokon://auth-complete");
   }
   res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");

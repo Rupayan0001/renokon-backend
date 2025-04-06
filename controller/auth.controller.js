@@ -352,5 +352,5 @@ export const exchangeJWT = async (req, res, next) => {
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: "/",
   });
-  return res.json({ success: true });
+  return res.status(200).json({ success: true });
 };

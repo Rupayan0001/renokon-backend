@@ -173,8 +173,18 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
 </html>
 
     `);
+  } else {
+    const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: NODE_ENV === "production" ? "None" : "lax",
+      secure: NODE_ENV === "production" ? true : false,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      path: "/",
+    });
+    return res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");
   }
-  return res.redirect(NODE_ENV === "production" ? "https://www.renokon.com" : "http://localhost:5173");
 
   // return res.status(200).json({ sendUser: req.user, message: "Logged in successfully" });
 });

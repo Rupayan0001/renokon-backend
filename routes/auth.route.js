@@ -162,7 +162,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
   <body>
     <h1>Redirecting to the Renokon app...</h1>
     <div class="spinner"></div>
-    <a href="renokon://auth-complete?code=${code}">If nothing happens, tap here ${code}</a>
+    <a href="renokon://auth-complete?code=${code}">Tap here to open Renokon ${code}</a>
 
     <script>
       setTimeout(() => {

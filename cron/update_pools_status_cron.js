@@ -13,6 +13,13 @@ const startPoolStatusCron = () => {
       const currentTime = new Date();
       const updateTime = new Date(Date.now() + 6 * 60 * 60 * 1000);
       const poolsToUpdate = await GameModel.find({ gameTime: { $lte: currentTime }, status: "active", full: true });
+      const twoHoursAgo = new Date(Date.now() - (2 * 60 * 60 * 1000 + 30 * 60 * 1000));
+
+      await JoinedPoolModel.deleteMany({
+        gameStartTime: { $lte: twoHoursAgo },
+        status: "live",
+      });
+
       const oneMinuteLater = new Date(currentTime.getTime() + 1 * 60 * 1000);
 
       const notFilledFilter = {

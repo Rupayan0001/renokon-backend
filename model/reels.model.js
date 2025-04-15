@@ -1,41 +1,44 @@
 import mongoose from "mongoose";
 
-const ReelsSchema = new mongoose.Schema({
+const ReelsSchema = new mongoose.Schema(
+  {
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
     },
     title: {
-        type: String,
-        index: true
+      type: String,
+      index: true,
     },
     description: {
-        type: String,
+      type: String,
     },
     videoLink: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     thumbnailLink: {
-        type: String,
+      type: String,
     },
     views: {
-        type: Number,
-        default: 0
+      type: Number,
+      default: 0,
     },
     likes: {
-        type: Number,
-        default: 0
+      type: Number,
+      default: 0,
     },
     comments: {
-        type: Number,
-        default: 0
+      type: Number,
+      default: 0,
     },
     shares: {
-        type: Number,
-        default: 0
+      type: Number,
+      default: 0,
     },
-}, { timestamps: true });
+  },
+  { timestamps: true }
+);
 
 ReelsSchema.index({ userId: 1 });
 

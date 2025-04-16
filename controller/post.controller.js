@@ -104,6 +104,7 @@ export const getAllPost = async (req, res, next) => {
         },
       },
     ]);
+    console.log("likedData: ", likedData);
     await PostModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
     if (!allPosts) return res.status(400).json({ message: "No posts found" });
     return res.status(200).json({ allPosts, likedData });

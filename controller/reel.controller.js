@@ -17,8 +17,35 @@ export const createReel = async (req, res) => {
 
 export const getReels = async (req, res) => {
   try {
-    const reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } });
-    return res.status(200).json({ reels });
+    const { page = 1 } = req.query;
+    const skip = (page - 1) * limit;
+    const limit = 20;
+    const reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
+      .skip(skip)
+      .limit(limit);
+
+    const allIds = reels.map((e) => e._id);
+    const likedData = await LikeModel.aggregate([
+      {
+        $match: {
+          postId: { $in: allIds },
+        },
+      },
+      {
+        $group: {
+          _id: "$postId",
+          totalLikes: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          postId: "$_id",
+          totalLikes: 1,
+          userLiked: { $literal: false },
+        },
+      },
+    ]);
+    return res.status(200).json({ reels, likedData });
   } catch (error) {
     console.log(`Error in getting reels: ${error}`);
     return res.status(500).json({ message: "Internal server error" });

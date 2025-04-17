@@ -20,6 +20,7 @@ export const getAllPost = async (req, res, next) => {
     // const celebrityAccounts = await UserModel.find({ followingCount: { $gt: 200 } }).select("_id");
     // const celebrityIds = celebrityAccounts.map(e => e._id);
     // const allPosts = await PostModel.find({ $or: [{ userId: { $in: req.user.following } }, { userId: { $in: req.user.friends } }, { userId: { $in: celebrityIds } }] }).sort({ createdAt: -1 });
+
     const { limit = 50, page = 1 } = req.query;
     const skip = (page - 1) * limit;
     const user = req.user;
@@ -54,6 +55,7 @@ export const getAllPost = async (req, res, next) => {
       await PostModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
       return res.status(200).json({ allPosts, likedData });
     }
+
     const userId = req.user?._id;
     const [myBlockedDocuments, hidePosts, following, friends, friends2, reportedPosts, notInterestedPosts] = await Promise.all([
       BlockUserModel.find({ userId }, { blockedUserId: 1, _id: 0 }).lean(),
@@ -104,7 +106,6 @@ export const getAllPost = async (req, res, next) => {
         },
       },
     ]);
-    console.log("likedData: ", likedData);
     await PostModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
     if (!allPosts) return res.status(400).json({ message: "No posts found" });
     return res.status(200).json({ allPosts, likedData });

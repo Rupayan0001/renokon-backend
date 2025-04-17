@@ -1,4 +1,5 @@
 import ReelsModel from "../model/reels.model.js";
+import LikeModel from "../model/like.model.js";
 import mongoose from "mongoose";
 export const createReel = async (req, res) => {
   try {
@@ -18,8 +19,8 @@ export const createReel = async (req, res) => {
 export const getReels = async (req, res) => {
   try {
     const { page = 1 } = req.query;
-    const skip = (page - 1) * limit;
     const limit = 20;
+    const skip = (page - 1) * limit;
     const reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
       .skip(skip)
       .limit(limit);
@@ -35,13 +36,14 @@ export const getReels = async (req, res) => {
         $group: {
           _id: "$postId",
           totalLikes: { $sum: 1 },
+          usersLiked: { $addToSet: "$userId" },
         },
       },
       {
         $project: {
           postId: "$_id",
           totalLikes: 1,
-          userLiked: { $literal: false },
+          userLiked: { $in: [req.user._id, "$usersLiked"] },
         },
       },
     ]);

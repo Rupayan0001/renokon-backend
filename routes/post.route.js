@@ -39,12 +39,11 @@ import { upForPost } from "../lib/multerForVideo.js";
 import uploadVideo from "../middleware/uploadVideo.js";
 const router = express.Router();
 
+router.use(auth);
+
 router.get("/getAllPost", getAllPost);
 router.get("/:postId/getThisPost", getPost);
 router.get("/getThisUserPostPhotos/:userId", getThisUserPostPhotos);
-
-router.use(auth);
-
 router.post("/myRecentPost", myRecentPost);
 router.get("/:userId/getCurrentUserPost", getCurrentUserPost);
 router.get("/getThisUserPostVideos/:userId", getThisUserPostVideos);

@@ -71,3 +71,31 @@ export const updateShareCount = async (req, res, next) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const likes = async (req, res, next) => {
+  try {
+    const currentUser = req.user;
+    let { postId } = req.params;
+    console.log(postId);
+    if (!postId) return res.status(400).json({ message: `No post id provided` });
+    const foundReel = await ReelsModel.findById({ _id: postId });
+    if (!foundReel) {
+      return res.status(404).json({ message: `Reel not found` });
+    }
+    const existingLike = await LikeModel.findOne({ postId, userId: currentUser._id });
+    if (existingLike) {
+      await LikeModel.deleteOne({ postId, userId: currentUser._id });
+      foundReel.likes -= 1;
+      await foundReel.save();
+      return res.status(200).json({ message: `Like removed` });
+    } else {
+      const newLike = await LikeModel.create({ postId, userId: currentUser._id });
+      foundReel.likes += 1;
+      await foundReel.save();
+      return res.status(200).json({ message: "Liked" });
+    }
+  } catch (error) {
+    console.log(`Error in updating likes: ${error}`);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};

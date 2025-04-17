@@ -673,7 +673,7 @@ export const likes = async (req, res, next) => {
     if (!isValid) return res.status(400).json({ message: `Invalid post id` });
     const foundPost = await PostModel.findById(postId);
     if (!foundPost) {
-      return res.status(400).json({ message: `Post not found` });
+      return res.status(404).json({ message: `Post not found` });
     }
     const existingLike = await LikeModel.findOne({ postId, userId: currentUser._id });
     if (existingLike) {

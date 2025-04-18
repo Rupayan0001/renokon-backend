@@ -175,7 +175,7 @@ router.get("/google/callback", passport.authenticate("google", { session: false 
     `);
   } else {
     const token = jwt.sign({ userId: id }, process.env.JWT_SECRET, { expiresIn: "30d", algorithm: "HS256" });
-
+    console.log("token: ", token, "NODE_ENV: ", NODE_ENV, id);
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: NODE_ENV === "production" ? "None" : "lax",

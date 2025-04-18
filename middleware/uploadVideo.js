@@ -1,10 +1,19 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
+
+// cloudinary_email= "rupayan.team@gmail.com "
 cloudinary.config({
-  cloud_name: "dnku8pwjp",
-  api_key: 171519932449455,
-  api_secret: "0r92XneXSr5K3oK0e6tHn_4CAlo",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME_2,
+  api_key: process.env.CLOUDINARY_API_KEY_2,
+  api_secret: process.env.CLOUDINARY_API_SECRET_2,
 });
+// cloudinary.config({
+//   cloud_name: "dnku8pwjp",
+//   api_key: 171519932449455,
+//   api_secret: "0r92XneXSr5K3oK0e6tHn_4CAlo",
+// });
 
 async function uploadVideo(req, res, next) {
   try {

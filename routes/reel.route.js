@@ -9,7 +9,7 @@ import { createReel, getReels, updateShareCount, likes, getComment, deleteCommen
 const router = express.Router();
 router.use(auth);
 
-router.get("/getReels", getReels);
+router.get("/getReels/:id", getReels);
 router.post("/createReel", uploadSingleVideo, uploadVideo, createReel);
 router.put("/updateShareCount/:reelId", updateShareCount);
 router.put("/:postId/likes", likes);

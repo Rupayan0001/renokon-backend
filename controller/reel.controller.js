@@ -19,12 +19,22 @@ export const createReel = async (req, res) => {
 
 export const getReels = async (req, res) => {
   try {
+    const { id } = req.params;
     const { page = 1 } = req.query;
     const limit = 20;
     const skip = (page - 1) * limit;
-    const reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
-      .skip(skip)
-      .limit(limit);
+    let reels;
+    if (id && id !== "undefined") {
+      const foundReel = await ReelsModel.findOne({ _id: id, videoLink: { $exists: true, $ne: "" } });
+      reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
+        .skip(skip)
+        .limit(limit);
+      reels[0] = foundReel;
+    } else {
+      reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
+        .skip(skip)
+        .limit(limit);
+    }
 
     const allIds = reels.map((e) => e._id);
     const likedData = await LikeModel.aggregate([

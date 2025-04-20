@@ -1,5 +1,6 @@
 import ReelsModel from "../model/reels.model.js";
 import LikeModel from "../model/like.model.js";
+import CommentModel from "../model/comment.model.js";
 import mongoose from "mongoose";
 export const createReel = async (req, res) => {
   try {
@@ -47,7 +48,9 @@ export const getReels = async (req, res) => {
         },
       },
     ]);
-    return res.status(200).json({ reels, likedData });
+    res.status(200).json({ reels, likedData });
+    await ReelsModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
+    return;
   } catch (error) {
     console.log(`Error in getting reels: ${error}`);
     return res.status(500).json({ message: "Internal server error" });
@@ -96,6 +99,43 @@ export const likes = async (req, res, next) => {
     }
   } catch (error) {
     console.log(`Error in updating likes: ${error}`);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getComment = async (req, res, next) => {
+  try {
+    const { reelId } = req.params;
+    if (!reelId) return res.status(400).json({ message: `No reel id provided` });
+    const getComments = await CommentModel.find({ reelId }).sort({ createdAt: -1 });
+    if (!getComments) {
+      return res.status(404).json({ message: "Reel not found" });
+    }
+    return res.status(200).json({ comments: getComments });
+  } catch (error) {
+    console.log(`Error in getting comment: ${error}`);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteComment = async (req, res, next) => {
+  try {
+    const currentUser = req.user;
+    // const id = req.params.id;
+    const { postId, id } = req.params;
+    const getComment = await CommentModel.deleteOne({ _id: id });
+    if (!getComment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    if (getComment.deletedCount > 0) {
+      // const allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
+      await ReelsModel.updateOne({ _id: postId }, { $inc: { commentCount: -1 } });
+      return res.status(200).json({ message: "Comment deleted successfully" });
+    } else {
+      throw new Error(`Error in deleting comment`);
+    }
+  } catch (error) {
+    console.log(`Error in adding comment: ${error}`);
     return res.status(500).json({ message: "Internal server error" });
   }
 };

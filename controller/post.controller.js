@@ -14,6 +14,7 @@ import mongoose from "mongoose";
 import FollowingModel from "../model/following.model.js";
 import FriendModel from "../model/friends.model.js";
 import FriendModel2 from "../model/friends2.model.js";
+import ReelsModel from "../model/reels.model.js";
 
 export const getAllPost = async (req, res, next) => {
   try {
@@ -757,10 +758,11 @@ export const shares = async (req, res, next) => {
 };
 export const getComment = async (req, res, next) => {
   try {
-    const postId = req.params.postId;
+    const { postId } = req.params;
+    if (!postId) return res.status(400).json({ message: `No post id provided` });
     const getComments = await CommentModel.find({ postId }).sort({ createdAt: -1 });
     if (!getComments) {
-      return res.status(400).json({ message: "Post not found" });
+      return res.status(404).json({ message: "Post not found" });
     }
     return res.status(200).json({ comments: getComments });
   } catch (error) {
@@ -771,39 +773,47 @@ export const getComment = async (req, res, next) => {
 export const createComment = async (req, res, next) => {
   try {
     const currentUser = req.user;
-    const { content, creatorProfilePic, creatorName, creatorId, postCreatorId } = req.body;
+    const { content, creatorProfilePic, creatorName, creatorId, postCreatorId, page } = req.body;
     const { postId } = req.params;
     if (!postId || !creatorId) {
       return res.status(400).json({ message: "Post not found" });
     }
 
     // const getPost = await PostModel.findById(postId);
-
-    const addComment = await CommentModel.create({
-      content,
-      postId,
-      media: [],
-      creatorProfilePic,
-      creatorName,
-      creatorId,
-      postCreatorId,
-    });
+    let addComment;
+    if (page === "Reels") {
+      addComment = await CommentModel.create({
+        content,
+        reelId: postId,
+        media: [],
+        creatorProfilePic,
+        creatorName,
+        creatorId,
+        postCreatorId,
+      });
+    } else {
+      addComment = await CommentModel.create({
+        content,
+        postId,
+        media: [],
+        creatorProfilePic,
+        creatorName,
+        creatorId,
+        postCreatorId,
+      });
+    }
     if (!addComment) {
       return res.status(404).json({ message: "Comment not created!" });
     }
     if (addComment) {
-      // const notified = await NotificationModel.create({
-      //     recipient: getPost.userId,
-      //     sender: currentUser._id,
-      //     type: "comment",
-      //     content: `${currentUser.name} has commented on your post.`,
-      //     relatedPost: postId,
-      //     read: false
-      // })
-      // getPost.comments.push({ content, currentUserId });
-
-      const allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
-      await PostModel.updateOne({ _id: postId }, { $inc: { commentCount: 1 } });
+      let allComments;
+      if (page === "Reels") {
+        allComments = await CommentModel.find({ reelId: postId }).sort({ createdAt: -1 }).limit(20);
+        await ReelsModel.updateOne({ _id: postId }, { $inc: { comments: 1 } });
+      } else {
+        allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
+        await PostModel.updateOne({ _id: postId }, { $inc: { commentCount: 1 } });
+      }
       return res.status(200).json({ allComments });
     } else {
       throw new Error(`Error in adding comment`);
@@ -816,17 +826,20 @@ export const createComment = async (req, res, next) => {
 export const updateComment = async (req, res, next) => {
   try {
     const currentUser = req.user;
-    const currentUserId = currentUser._id;
-    const content = req.body.content;
-    const postId = req.params.postId;
-    const id = req.params.id;
+    const { content, page = "Home" } = req.body;
+    const { postId, id } = req.params;
     const updateComment = await CommentModel.updateOne({ _id: id }, { $set: { content } });
     if (!updateComment) {
-      return res.status(400).json({ message: "Comment not found" });
+      return res.status(404).json({ message: "Comment not found" });
     }
 
     if (updateComment.modifiedCount > 0) {
-      const allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
+      let allComments;
+      if (page === "Reels") {
+        allComments = await CommentModel.find({ reelId: postId }).sort({ createdAt: -1 }).limit(20);
+      } else {
+        allComments = await CommentModel.find({ postId }).sort({ createdAt: -1 }).limit(20);
+      }
       return res.status(200).json({ message: "Comment added successfully", allComments });
     } else {
       throw new Error(`Error in updating comment`);

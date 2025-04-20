@@ -823,6 +823,7 @@ export const createComment = async (req, res, next) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+// Update Comment
 export const updateComment = async (req, res, next) => {
   try {
     const currentUser = req.user;

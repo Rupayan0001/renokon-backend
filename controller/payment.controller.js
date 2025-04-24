@@ -1,6 +1,6 @@
 import { Cashfree } from "cashfree-pg";
 import Wallet from "../model/game_model/wallet.model.js";
-import { withdrawalRequestEmailTemplate, newWithdrawalRequestAdminEmail, depositSuccessEmailTemplate } from "../emails/emailTemplate.js";
+import { withdrawalRequestEmailTemplate, newWithdrawalRequestAdminEmail, depositSuccessEmailTemplate, orderConfirmationEmailTemplate } from "../emails/emailTemplate.js";
 import { sendEmail } from "../lib/emailService.js";
 import axios from "axios";
 import UserModel from "../model/user.model.js";
@@ -46,6 +46,7 @@ export const initiatePayment = async (req, res) => {
   }
 };
 export const verifyPayment = async (req, res) => {
+  console.log("Boom");
   try {
     const { orderId } = req.params;
     const user = req.user;
@@ -73,6 +74,42 @@ export const verifyPayment = async (req, res) => {
     }
     const html = depositSuccessEmailTemplate(user.name, amount);
     await sendEmail(user.email, "Deposit Successful", html);
+    return res.status(200).json({ success: true, message: "Payment verified", wallet });
+  } catch (error) {
+    console.error("Error in verifyPayment:", error);
+    res.status(500).json({ success: false, message: "VerifyPayment failed" });
+  }
+};
+export const orderConfirmed = async (req, res) => {
+  console.log("hit");
+  try {
+    const { orderId } = req.params;
+    const { product } = req.body;
+    const user = req.user;
+    if (!orderId) return res.status(400).json({ success: false, message: "Order id is not provided" });
+    const response = await axios.get(`${CASHFREE_API_URL}/${orderId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-client-id": CASHFREE_APP_ID,
+        "x-client-secret": CASHFREE_SECRET_KEY,
+        "x-api-version": "2022-09-01",
+      },
+    });
+    if (response.data.order_status !== "PAID") return res.status(400).json({ success: false, message: "Payment not verified" });
+    let amount;
+    let wallet;
+    if (response.data.order_status === "PAID") {
+      amount = response.data.order_amount;
+      const transaction = {
+        amount: Number(amount),
+        type: "Purchase",
+        status: "Completed",
+        referenceId: response.data.order_id,
+      };
+      // wallet = await Wallet.findOneAndUpdate({ userId: user._id }, { $inc: { balance: amount }, $push: { transactions: transaction } }, { new: true, upsert: true });
+    }
+    const html = orderConfirmationEmailTemplate(user.name, product, amount, "7 days");
+    await sendEmail(user.email, "Order Confirmed", html);
     return res.status(200).json({ success: true, message: "Payment verified", wallet });
   } catch (error) {
     console.error("Error in verifyPayment:", error);

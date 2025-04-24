@@ -933,3 +933,99 @@ export function depositSuccessEmailTemplate(name, amount) {
     </html>
     `;
 }
+
+export function orderConfirmationEmailTemplate(name, product, price, deliveryDate) {
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">  
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Confirmed</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background-color: #f7f7f7;
+          margin: 0;
+          padding: 0;
+          text-align: center;
+          color: #2c2c2c;
+        }
+        .email-container {
+          max-width: 600px;
+          margin: 40px auto;
+          background: #ffffff;
+          border-radius: 12px;
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+          overflow: hidden;
+        }
+        .email-header {
+          background: linear-gradient(135deg, #000000, #434343);
+          color: #ffffff;
+          padding: 30px;
+          font-size: 28px;
+          font-weight: 600;
+          letter-spacing: 1px;
+        }
+        .email-body {
+          padding: 40px 30px;
+          text-align: left;
+        }
+        .product-info {
+          background-color: #fafafa;
+          padding: 20px;
+          border-left: 4px solid #000000;
+          margin: 30px 0;
+          border-radius: 8px;
+        }
+        .product-info h2 {
+          margin: 0 0 10px;
+          font-size: 20px;
+        }
+        .product-info p {
+          margin: 5px 0;
+          font-size: 16px;
+          color: #444;
+        }
+        .footer {
+          padding: 20px;
+          background-color: #f0f0f0;
+          color: #777777;
+          font-size: 14px;
+        }
+        .footer a {
+          color: #000000;
+          text-decoration: none;
+          font-weight: 500;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="email-header">
+          Your Order Has Been Confirmed ✨
+        </div>
+        <div class="email-body">
+          <p>Hi <strong>${name}</strong>,</p>
+          <p>We’re delighted to let you know that your order has been confirmed and is being prepared with care.</p>
+
+          <div class="product-info">
+            <h2>🛍️ Product: ${product}</h2>
+            <p><strong>Price:</strong> ₹${price}</p>
+            <p><strong>Expected Delivery:</strong> ${deliveryDate}</p>
+          </div>
+
+          <p>Thank you for shopping with Renokon, where luxury meets experience.</p>
+          <p>If you have any questions, we’re just a message away.</p>
+
+          <p>Warm regards,<br>The Renokon Concierge Team</p>
+        </div>
+        <div class="footer">
+          Need help? <a href="mailto:renokon.team@gmail.com">Contact Support</a><br>
+          &copy; 2025 Renokon. All rights reserved.
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}

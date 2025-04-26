@@ -5,8 +5,8 @@ import mongoose from "mongoose";
 export const createReel = async (req, res) => {
   try {
     const user = req.user;
-    const { title, description } = req.body;
-    const reel = await ReelsModel.create({ userId: user._id, title, description, videoLink: req.videoURL });
+    const { link } = req.body;
+    const reel = await ReelsModel.create({ userId: user._id, videoLink: req.videoURL, productLink: link });
     if (reel) {
       return res.status(200).json({ reel, message: "Reel uploaded successfully" });
     }
@@ -28,12 +28,14 @@ export const getReels = async (req, res) => {
       const foundReel = await ReelsModel.findOne({ _id: id, videoLink: { $exists: true, $ne: "" } });
       reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .sort({ createdAt: -1 });
       reels[0] = foundReel;
     } else {
       reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .sort({ createdAt: -1 });
     }
 
     const allIds = reels.map((e) => e._id);

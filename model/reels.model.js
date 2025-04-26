@@ -8,7 +8,6 @@ const ReelsSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      index: true,
     },
     description: {
       type: String,
@@ -16,6 +15,9 @@ const ReelsSchema = new mongoose.Schema(
     videoLink: {
       type: String,
       required: true,
+    },
+    productLink: {
+      type: String,
     },
     thumbnailLink: {
       type: String,

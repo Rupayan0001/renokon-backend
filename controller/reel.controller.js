@@ -1,12 +1,28 @@
 import ReelsModel from "../model/reels.model.js";
 import LikeModel from "../model/like.model.js";
 import CommentModel from "../model/comment.model.js";
+import ProductModel from "../model/ecommerce_model/product.model.js";
 import mongoose from "mongoose";
 export const createReel = async (req, res) => {
   try {
     const user = req.user;
     const { link } = req.body;
-    const reel = await ReelsModel.create({ userId: user._id, videoLink: req.videoURL, productLink: link });
+    console.log("link", link);
+    let productLink = "";
+    let productImage = "";
+    let productTitle = "";
+    if (link) {
+      let idNumber = link.split("/").at(-1);
+      const product = await ProductModel.findOne({ _id: idNumber });
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      productLink = idNumber;
+      productImage = product.image[0];
+      productTitle = product.title;
+      console.log("idNumber: ", idNumber);
+    }
+    const reel = await ReelsModel.create({ userId: user._id, videoLink: req.videoURL, productLink, productImage, productTitle });
     if (reel) {
       return res.status(200).json({ reel, message: "Reel uploaded successfully" });
     }

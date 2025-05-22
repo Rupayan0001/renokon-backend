@@ -11,6 +11,7 @@ import HideAllPostsModel from "../model/hideAllPost.model.js";
 import BlockUserModel from "../model/blockList.model.js";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
+import ProductModel from "../model/ecommerce_model/product.model.js";
 import FollowingModel from "../model/following.model.js";
 import FriendModel from "../model/friends.model.js";
 import FriendModel2 from "../model/friends2.model.js";
@@ -318,10 +319,18 @@ export const createPost = async (req, res, next) => {
     });
     const urls = await Promise.all(uploadPromises);
     const currentUser = req.user;
-    const { text = "", audience = "Everyone", type = "post", question = "", option1 = "", option2 = "" } = req.body;
+    const { text = "", audience = "Everyone", type = "post", question = "", option1 = "", option2 = "", link = "" } = req.body;
     if (type === "poll") {
       if (!question || !option1 || !option2) {
         return res.status(400).json({ error: "A poll must have a question and 2 options." });
+      }
+    }
+    let idNumber = "";
+    if (link) {
+      idNumber = link.split("/").at(-1);
+      const product = await ProductModel.findOne({ _id: idNumber });
+      if (!product) {
+        return res.status(404).json({ message: "Product link not valid" });
       }
     }
     const post = await PostModel.create({
@@ -330,6 +339,7 @@ export const createPost = async (req, res, next) => {
       creatorProfilePic: currentUser.profilePic,
       postTextContent: text,
       image: urls || [],
+      productLink: idNumber,
       question,
       option1,
       option2,

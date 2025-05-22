@@ -19,6 +19,12 @@ const ReelsSchema = new mongoose.Schema(
     productLink: {
       type: String,
     },
+    productImage: {
+      type: String,
+    },
+    productTitle: {
+      type: String,
+    },
     thumbnailLink: {
       type: String,
     },

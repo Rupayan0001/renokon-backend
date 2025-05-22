@@ -45,6 +45,9 @@ const PostSchema = new mongoose.Schema(
     video: {
       type: [String],
     },
+    productLink: {
+      type: String,
+    },
 
     // For polls
 

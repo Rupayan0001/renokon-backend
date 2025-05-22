@@ -12,6 +12,7 @@ import messagesRoutes from "./routes/message.route.js";
 import gamesRoutes from "./routes/game.route.js";
 import notificationRoutes from "./routes/notification.route.js";
 import paymantRoutes from "./routes/payment.route.js";
+import ecommerceRoutes from "./routes/ecommerce.route.js";
 import connectDB from "./lib/db.js";
 import compression from "compression";
 import poolStatusUpdateCron from "./cron/update_pools_status_cron.js";
@@ -88,6 +89,7 @@ app.use("/api/v1/notification", notificationRoutes);
 app.use("/api/v1/business", businessRoutes);
 app.use("/api/v1/game", gamesRoutes);
 app.use("/api/v1/payment", paymantRoutes);
+app.use("/api/v1/ecommerce", ecommerceRoutes);
 
 const server = http.createServer(app);
 

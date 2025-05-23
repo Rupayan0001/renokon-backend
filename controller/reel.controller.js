@@ -7,10 +7,10 @@ export const createReel = async (req, res) => {
   try {
     const user = req.user;
     const { link } = req.body;
-    console.log("link", link);
     let productLink = "";
     let productImage = "";
     let productTitle = "";
+    const title = req.body.title || "";
     if (link) {
       let idNumber = link.split("/").at(-1);
       const product = await ProductModel.findOne({ _id: idNumber });
@@ -20,9 +20,8 @@ export const createReel = async (req, res) => {
       productLink = idNumber;
       productImage = product.image[0];
       productTitle = product.title;
-      console.log("idNumber: ", idNumber);
     }
-    const reel = await ReelsModel.create({ userId: user._id, videoLink: req.videoURL, productLink, productImage, productTitle });
+    const reel = await ReelsModel.create({ userId: user._id, videoLink: req.videoURL, title, productLink, productImage, productTitle });
     if (reel) {
       return res.status(200).json({ reel, message: "Reel uploaded successfully" });
     }
@@ -48,10 +47,7 @@ export const getReels = async (req, res) => {
         .sort({ createdAt: -1 });
       reels[0] = foundReel;
     } else {
-      reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } })
-        .skip(skip)
-        .limit(limit)
-        .sort({ createdAt: -1 });
+      reels = await ReelsModel.find({ videoLink: { $exists: true, $ne: "" } }).sort({ createdAt: -1 });
     }
 
     const allIds = reels.map((e) => e._id);

@@ -34,7 +34,7 @@ async function uploadVideo(req, res, next) {
         if (err) {
           console.error("Error deleting file:", err);
         } else {
-          console.log("Invalid video deleted successfully.");
+          console.log("Video deleted successfully.");
         }
       });
       return next();

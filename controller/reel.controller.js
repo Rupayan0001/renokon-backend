@@ -35,6 +35,7 @@ export const createReel = async (req, res) => {
 export const getReels = async (req, res) => {
   try {
     const { id } = req.params;
+    const { videoPage } = req.query;
     const { page = 1 } = req.query;
     const limit = 20;
     const skip = (page - 1) * limit;
@@ -73,7 +74,9 @@ export const getReels = async (req, res) => {
       },
     ]);
     res.status(200).json({ reels, likedData });
-    await ReelsModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
+    if (!videoPage) {
+      await ReelsModel.updateMany({ _id: { $in: allIds } }, { $inc: { views: 1 } });
+    }
     return;
   } catch (error) {
     console.log(`Error in getting reels: ${error}`);

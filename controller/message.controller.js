@@ -30,7 +30,6 @@ export const getMessages = async (req, res) => {
       message: "Messages retrieved successfully",
     });
   } catch (error) {
-    console.error("Error fetching messages:", error);
     res.status(500).json({
       success: false,
       message: "Failed to retrieve messages",
